@@ -481,7 +481,7 @@ namespace libint2 {
                                                                             ) {
 
         std::locale locale(locale_name.c_str());  // TODO omit c_str() with up-to-date stdlib
-        std::vector<std::vector<libint2::Shell>> ref_shells(118); // 118 = number of chemical elements
+        std::vector<std::vector<libint2::Shell>> ref_shells(119); // 118 = number of chemical elements + 1 because we insert at(Z)
         std::ifstream is(file_dot_g94);
         is.imbue(locale);
 
