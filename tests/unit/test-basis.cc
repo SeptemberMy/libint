@@ -130,6 +130,8 @@ TEST_CASE("Basis", "[basis]") {
                            "def2-tzvppd",
                            "def2-tzvppd-c",
                            "mini",
+                           "sap_grasp_large",
+                           "sap_helfem_large",
                            "sto-3g",
                            "sto-6g"})
       test(bs_name);
