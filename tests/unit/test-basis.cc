@@ -56,6 +56,7 @@ TEST_CASE("Basis", "[basis]") {
                            "6-31g*",
                            "6-31g**",
                            "ano-rcc",
+                           "ano-rcc-mb",
                            "aug-cc-pv5z-cabs",
                            "aug-cc-pvdz-cabs",
                            "aug-cc-pvqz-cabs",
