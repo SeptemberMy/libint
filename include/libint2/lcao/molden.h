@@ -296,10 +296,22 @@ class Export {
           const auto pure = shell.contr[c].pure;
           if (pure) {
             int m;
+            // Molden only handles Cartesian p shells, thus remap solid-harmonic
+            // p shells to Cartesians:
+            // - CCA: solid harmonics {y, z, x} -> Cartesian {x, y, z}
+            // - Gaussian: solid harmonics {z, x, y} -> Cartesian {x, y, z}
             if (l == 1) {
-              ao_map_[ao_molden]     = ao + 2;
+#if LIBINT_SHGSHELL_ORDERING == LIBINT_SHGSHELL_ORDERING_STANDARD
+              ao_map_[ao_molden] = ao + 2;
               ao_map_[ao_molden + 1] = ao;
               ao_map_[ao_molden + 2] = ao + 1;
+#elif LIBINT_SHGSHELL_ORDERING == LIBINT_SHGSHELL_ORDERING_GAUSSIAN
+              ao_map_[ao_molden] = ao + 1;
+              ao_map_[ao_molden + 1] = ao + 2;
+              ao_map_[ao_molden + 2] = ao;
+#else
+#error "unknown value of LIBINT_SHGSHELL_ORDERING"
+#endif
               ao_molden += 3;
             } else {
               FOR_SOLIDHARM_MOLDEN(l, m)
