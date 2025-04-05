@@ -3,6 +3,15 @@
 
 Following is a brief summary of changes made in each release of Libint.
 
+- 2025-04-05: 2.10.0
+  - PR #354: added ANO-RCC-MB basis sets (HT @kshitij-05)
+  - PR #352: added correlation-consistent 7Z basis sets (HT @powellsr)
+  - PR #350: vector traits for simd::VectorAVXFloat (HT @johannes-menzel)
+  - PR #346: added atomic potentials (fitted to Gaussians) used for Superposition of Atomic Potentials (HT @kshitij-05)
+  - PR #345: fixes Molden file generation in presence of solid harmonic p shells (HT @dmejiar)
+  - PR #342: build fixes for MinGW-w64 (HT @MehdiChinoune)
+  - PR #340: derivatives of Cartesian electric multipoles (HT @EricaCMitchell)
+
 - 2024-03-04: 2.9.0
   - PR #335: l->symbol map reuse + other misc improvements
   - PR #334: bump Catch2 to 2.13.10 (HT @hrnagel)
