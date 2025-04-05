@@ -250,7 +250,6 @@ class Export {
               "molden::Export cannot handle shells with l > 4");
 
         switch (contr.l) {
-          case 1:
           case 2:
           case 3:
           case 4: {
@@ -265,7 +264,7 @@ class Export {
           }
 
           default: {
-          }  // l = 0 is fine
+          }  // l = 0 && 1 are fine
         }
       }
     }
