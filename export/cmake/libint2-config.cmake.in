@@ -63,8 +63,8 @@ endmacro(alias_target)
 # alias new target names to old namespaced targets
 alias_target(Libint2::int2 Libint2::libint2)
 alias_target(Libint2::int2-static Libint2::libint2-static)
-alias_target(Libint2::int2_static Libint2::libint2-static)
 alias_target(Libint2::Eigen Libint2::libint2_Eigen)
 alias_target(Libint2::cxx Libint2::libint2_cxx)
+alias_target(Libint2::cxx-static Libint2::libint2_cxx-static)
 
 set(LIBINT2_FOUND TRUE)
