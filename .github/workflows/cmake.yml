@@ -12,11 +12,11 @@ jobs:
       fail-fast: false
       matrix:
         build_type : [ Release, Debug ]
-        os : [ macos-latest, ubuntu-20.04 ]
+        os : [ macos-latest, ubuntu-24.04 ]
         include:
-          - os: ubuntu-20.04
-            cxx: g++-10
-            cc: gcc-10
+          - os: ubuntu-24.04
+            cxx: g++
+            cc: gcc
           - os: macos-latest
             cxx: clang++
             cc: clang
@@ -38,7 +38,7 @@ jobs:
         -DMPIEXEC_PREFLAGS='--bind-to;none;--allow-run-as-root'
         -DENABLE_FORTRAN=ON
         -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/build/library/install
-        -DPython_EXECUTABLE=${{ matrix.os == 'macos-latest' && '/usr/local/Frameworks/Python.framework/Versions/3.11/bin/python3.11' || '/usr/bin/python3.8' }}
+        -DPython_EXECUTABLE=${{ matrix.os == 'macos-latest' && '/usr/local/Frameworks/Python.framework/Versions/3.11/bin/python3.11' || '/usr/bin/python3' }}
     outputs:
       should_skip: ${{ steps.skip_check.outputs.should_skip }}
 
@@ -79,11 +79,11 @@ jobs:
         
 
     - name: Install prerequisites Ubuntu packages
-      if: ${{ steps.skip_check.outputs.should_skip != 'true' && matrix.os == 'ubuntu-20.04' }}
+      if: ${{ steps.skip_check.outputs.should_skip != 'true' && matrix.os == 'ubuntu-24.04' }}
       run: |
         sudo apt-get update
-        sudo apt-get install ninja-build g++-10 gfortran-10 liblapack-dev libboost-dev libeigen3-dev ccache python3-numpy python3-scipy
-        echo "FC=/usr/bin/gfortran-10" >> $GITHUB_ENV
+        sudo apt-get install ninja-build gfortran liblapack-dev libboost-dev libeigen3-dev ccache python3-numpy python3-scipy
+        echo "FC=/usr/bin/gfortran" >> $GITHUB_ENV
         echo "EIGEN3_INCLUDE_DIR=/usr/include/eigen3" >> $GITHUB_ENV
 
     - name: Prepare ccache timestamp
@@ -116,7 +116,7 @@ jobs:
       shell: bash
       working-directory: ${{github.workspace}}/build/compiler
       run: |
-        if [[ "${{ matrix.os }}" == "ubuntu-20.04" ]]; then
+        if [[ "${{ matrix.os }}" == "ubuntu-24.04" ]]; then
           :
           CPPFLAGS="-I$EIGEN3_INCLUDE_DIR" CXXFLAGS="-std=c++11 -Wno-enum-compare" ${{github.workspace}}/configure --with-max-am=2,1 --with-eri-max-am=2,2 --with-eri3-max-am=3,2 --with-eri2-max-am=3,2 --enable-eri=1 --enable-eri3=1 --enable-eri2=0 --enable-1body=1 --disable-1body-property-derivs --with-multipole-max-order=2
 
