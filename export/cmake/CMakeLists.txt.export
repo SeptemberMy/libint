@@ -111,7 +111,7 @@ endif (TARGET Eigen3::Eigen)
 if (TARGET libint2_Eigen)
   get_property(EIGEN3_INCLUDE_DIR TARGET libint2_Eigen PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
   message(STATUS "Found Eigen3: EIGEN3_INCLUDE_DIR=${EIGEN3_INCLUDE_DIR}")
-  install(TARGETS libint2_Eigen  EXPORT libint2 COMPONENT Eigen)
+  install(TARGETS libint2_Eigen EXPORT libint2 COMPONENT Eigen)
   set(LIBINT_HAS_CXX_API 1)
 else(TARGET libint2_Eigen)
   set(LIBINT_HAS_CXX_API 0)
@@ -673,6 +673,11 @@ install(FILES
 add_custom_target_subproject(libint install-config
         COMMAND ${CMAKE_COMMAND} -DCOMPONENT=libint2-config -P ${PROJECT_BINARY_DIR}/cmake_install.cmake
         COMMENT "Installing Libint2 config components")
+
+# Make Libint consumable from the build directory without installation
+export(EXPORT libint2
+       NAMESPACE Libint2::
+       FILE "${PROJECT_BINARY_DIR}/libint2-targets.cmake")
 
 feature_summary(WHAT ALL
         DESCRIPTION "=== Libint2 Package/Feature Info ===")
