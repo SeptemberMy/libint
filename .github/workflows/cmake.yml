@@ -134,7 +134,7 @@ jobs:
 
     - name: Archive Library Tarball
       if: ${{ steps.skip_check.outputs.should_skip != 'true' && matrix.build_type == 'Release'}}
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         if-no-files-found: error
         name: ${{ runner.os }}-${{ matrix.cxx }}
