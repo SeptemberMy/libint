@@ -3,6 +3,9 @@
 
 Following is a brief summary of changes made in each release of Libint.
 
+- 2025-04-08: 2.10.2
+  - PR #360: CMake targets can be consumed from the build tree (e.g., usable via FetchContent)
+
 - 2025-04-07: 2.10.1
   - PR #358: introduced libint2_cxx-static CMake TARGET
   - PR #357: fixup ANO-RCC-MB basis set definition (amends PR #354)
