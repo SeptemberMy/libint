@@ -576,7 +576,7 @@ bool test_3eri(unsigned int deriv_order, unsigned int lmax_max) {
 
   // reference code only supports Cartesian gaussians
 #if ERI3_PURE_SH
-  lmax0 = 1;
+  lmax0 = std::min(lmax0, 1u);
 #endif
 
   for (unsigned int l0 = 0; l0 <= lmax0; ++l0) {
@@ -894,7 +894,7 @@ bool test_2eri(unsigned int deriv_order, unsigned int lmax_max) {
 
   // reference code only supports Cartesian gaussians
 #if ERI2_PURE_SH
-  lmax = 1;
+  lmax = std::min(lmax, 1u);
 #endif
 
   for (unsigned int l0 = 0; l0 <= lmax; ++l0) {
