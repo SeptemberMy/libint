@@ -1114,7 +1114,8 @@ struct TennoGmEval {
   /// @param[in] lo smallest lengthscale to be represented
   /// @param[in] hi largest lengthscale to be represented
   /// @param[in] eps precision threshold
-  /// @throw std::invalid_argument if \f$ \zeta^2/(4 \rho) \f$ exceeds \c Umax
+  /// @return vector of Gaussian geminals representing a Slater function with
+  // the given zeta as a vector of std::pair(exponent, coefficient)
   static std::vector<std::pair<double, double>> fit_slater(double zeta,
                                                            double lo = 1e-5,
                                                            double hi = 5,
@@ -1346,28 +1347,23 @@ struct TennoGmEval {
   /// only used if @c Exp==true
   /// @param[in] mmax the maximum value of \f$ m \f$
   /// @throw std::invalid_argument if \p U exceeds \c Umax
+  /// @return bool indicating whether interpolation was successful
   template <bool Exp>
   bool interpolate_Gm(Real* Gm_vec, Real T, Real U, Real zeta_over_two_rho,
                       long mmax) const {
     assert(T >= 0);
     if (U > Umax) {
-      //      throw std::invalid_argument(
-      //          "TennoGmEval::eval_{yukawa,slater}() : arguments out of range,
-      //          " "zeta*zeta*one_over_rho/4=" + std::to_string(U) + " cannot
-      //          exceed " + std::to_string(Umax));
-      //          "TennoGmEval::eval_{yukawa,slater}() : arguments out of range,
-      //          " "zeta*zeta*one_over_rho/4=" + std::to_string(U) + " cannot
-      //          exceed " + std::to_string(Umax));
-      std::cout
+      libint2::verbose_stream()
           << "TennoGmEval::eval_{yukawa,slater}() : arguments out of range, "
           << "zeta*zeta*one_over_rho/4=" << std::to_string(U)
-          << " cannot exceed " << std::to_string(Umax) << std::endl;
+          << " cannot exceed " << std::to_string(Umax)
+          << " will represent Slater function as a linear combination of"
+          << " Gaussian functions " << std::endl;
       return false;
     }
     if (U < Umin || U > Umax) {
       return false;
     }
-    // assert(U >= Umin && U <= Umax);
 
     // maps x in [0,2] to [-1/2,1/2] in a linear fashion
     auto linear_map_02 = [](Real x) {
