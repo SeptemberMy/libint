@@ -3,6 +3,10 @@
 
 Following is a brief summary of changes made in each release of Libint.
 
+- 2025-04-24: 2.11.0
+  - PR #364: fix eritest segfaults with atypical L combinations
+  - PR #365: use Gaussian fit of Slater geminal for exceptional parameter values
+
 - 2025-04-08: 2.10.2
   - PR #360: CMake targets can be consumed from the build tree (e.g., usable via FetchContent)
 
