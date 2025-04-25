@@ -25,7 +25,13 @@
 #error "Libint2 requires a C++ compiler"
 #endif
 
-#if __cplusplus >= 201402L
+#if __cplusplus >= 202302L
+#define LIBINT2_CPLUSPLUS_STD 2023
+#elif __cplusplus >= 202002L
+#define LIBINT2_CPLUSPLUS_STD 2020
+#elif __cplusplus >= 201703L
+#define LIBINT2_CPLUSPLUS_STD 2017
+#elif __cplusplus >= 201402L
 #define LIBINT2_CPLUSPLUS_STD 2014
 #elif __cplusplus >= 201103L
 #define LIBINT2_CPLUSPLUS_STD 2011
