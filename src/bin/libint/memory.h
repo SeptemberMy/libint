@@ -21,6 +21,7 @@
 #include <limits.h>
 #include <smart_ptr.h>
 
+#include <cstdint>
 #include <list>
 
 #ifndef _libint2_src_bin_libint_memory_h_
