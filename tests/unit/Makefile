@@ -14,10 +14,6 @@ CPPFLAGS += -DSRCDATADIR=\"$(SRCDIR)/$(TOPDIR)/lib/basis\"
 # initialize statics explicitly in test.cc
 CPPFLAGS += -DLIBINT2_CONSTEXPR_STATICS=0
 
-COMPILER_LIB = $(TOPDIR)/src/bin/libint/libINT.a
-COMPUTE_LIB = -lint2
-vpath %.a $(TOPDIR)/lib:$(TOPDIR)/lib/.libs
-
 OBJSUF = o
 DEPSUF = d
 CXXDEPENDSUF = none

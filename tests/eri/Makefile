@@ -15,10 +15,6 @@ CPPFLAGS += -I$(SRCDIR)/$(TOPDIR)/src/lib/libint
 # include processed headers from the compiler directory
 CPPFLAGS += -I$(TOPDIR)/src/bin/libint
 
-COMPILER_LIB = $(TOPDIR)/src/bin/libint/libINT.a
-COMPUTE_LIB = -lint2
-vpath %.a $(TOPDIR)/lib:$(TOPDIR)/lib/.libs 
-
 OBJSUF = o
 DEPSUF = d
 CXXDEPENDSUF = none
@@ -70,4 +66,3 @@ endif
 
 -include $(CXXTESTDEP)
 endif
-
