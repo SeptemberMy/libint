@@ -42,10 +42,10 @@ ifeq ($(CXXGEN_SUPPORTS_CPP11),yes)
     ifeq ($(LIBINT_CONTRACTED_INTS),yes)
      ifeq ($(LIBINT_SHELL_SET),1)
 check1:: $(TEST1)
-	./$^ $(SRCDIR)/h2o.xyz | $(PYTHON) $(SRCDIR)/$^-validate.py
+	LD_LIBRARY_PATH=$(TOPDIR)/lib/.libs:$(LD_LIBRARY_PATH) DYLD_LIBRARY_PATH=$(TOPDIR)/lib/.libs:$(DYLD_LIBRARY_PATH) ./$^ $(SRCDIR)/h2o.xyz | $(PYTHON) $(SRCDIR)/$^-validate.py
 
 check2:: $(TEST2)
-	./$^ $(SRCDIR)/h2o_rotated.xyz | $(PYTHON) $(SRCDIR)/$^-validate.py ../../src/lib/libint/MakeVars.features
+	LD_LIBRARY_PATH=$(TOPDIR)/lib/.libs:$(LD_LIBRARY_PATH) DYLD_LIBRARY_PATH=$(TOPDIR)/lib/.libs:$(DYLD_LIBRARY_PATH) ./$^ $(SRCDIR)/h2o_rotated.xyz | $(PYTHON) $(SRCDIR)/$^-validate.py ../../src/lib/libint/MakeVars.features
 
 $(TEST1): $(CXXTEST1OBJ) $(COMPILER_LIB) $(COMPUTE_LIB)
 	$(LD) -o $@ $(CXXFLAGS) $(LDFLAGS) $^ $(SYSLIBS)

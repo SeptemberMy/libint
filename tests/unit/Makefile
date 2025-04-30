@@ -52,8 +52,8 @@ $(TEST1): $(CXXTEST1OBJ) $(CTEST1OBJ) $(COMPUTE_LIB)
 	$(LD) -o $@ $(CXXFLAGS) $(LDFLAGS) $^ $(SYSLIBS)
 
 check1:: $(TEST1)
-	./$^
-	./$^ --shgshell-order=gaussian
+	LD_LIBRARY_PATH=$(TOPDIR)/lib/.libs:$(LD_LIBRARY_PATH) DYLD_LIBRARY_PATH=$(TOPDIR)/lib/.libs:$(DYLD_LIBRARY_PATH) ./$^
+	LD_LIBRARY_PATH=$(TOPDIR)/lib/.libs:$(LD_LIBRARY_PATH) DYLD_LIBRARY_PATH=$(TOPDIR)/lib/.libs:$(DYLD_LIBRARY_PATH) ./$^ --shgshell-order=gaussian
 
 # Source files for timer and tester are to be compiled using CXXGEN
 $(TEST1): CXX=$(CXXGEN)
