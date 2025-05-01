@@ -1172,7 +1172,7 @@ struct TennoGmEval {
     assert(coeffs.size() == expnts.size());
     std::vector<std::pair<double, double>> result;
     for (size_t i = 0; i != coeffs.size(); ++i) {
-      if (abs(coeffs[i]) > std::numeric_limits<double>::epsilon())
+      if (std::abs(coeffs[i]) > std::numeric_limits<double>::epsilon())
         result.push_back(std::pair<double, double>(expnts[i], coeffs[i]));
     }
     return result;
