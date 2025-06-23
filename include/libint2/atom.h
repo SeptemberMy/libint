@@ -47,6 +47,12 @@ inline bool operator==(const Atom &atom1, const Atom &atom2) {
 }
 
 namespace constants {
+/// the 2022 CODATA reference set, available at
+/// https://physics.nist.gov/cuu/pdf/wall_2022.pdf
+struct codata_2022 {
+  static constexpr double bohr_to_angstrom = 0.529177210544;
+  static constexpr double angstrom_to_bohr = 1 / bohr_to_angstrom;
+};
 /// the 2018 CODATA reference set, available at
 /// https://physics.nist.gov/cuu/pdf/wall_2018.pdf
 struct codata_2018 {
