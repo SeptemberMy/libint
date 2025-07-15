@@ -319,7 +319,10 @@ class Export {
               ++ao_molden;
               END_FOR_SOLIDHARM_MOLDEN
             }
-            ao += INT_NCART(l);
+            ao += 2*l + 1;
+          } else {
+            for(size_t i = 0; i != INT_NCART(l); ++i, ++ao_molden, ++ao)
+              ao_map_[ao_molden] = ao;
           }
         }  // contraction loop
       }
