@@ -315,14 +315,17 @@ class Export {
             } else {
               FOR_SOLIDHARM_MOLDEN(l, m)
               const auto ao_in_shell = libint2::INT_SOLIDHARMINDEX(l, m);
-              ao_map_[ao_molden] = ao + ao_in_shell;
-              ++ao_molden;
+              ao_map_[ao_molden++] = ao + ao_in_shell;
               END_FOR_SOLIDHARM_MOLDEN
             }
-            ao += 2*l + 1;
+            ao += 2 * l + 1;
           } else {
-            for(size_t i = 0; i != INT_NCART(l); ++i, ++ao_molden, ++ao)
-              ao_map_[ao_molden] = ao;
+            long i, j, k;
+            FOR_CART_MOLDEN(i, j, k, l)
+            const auto ao_in_shell = libint2::INT_CARTINDEX(l, i, j);
+            ao_map_[ao_molden++] = ao + ao_in_shell;
+            END_FOR_CART_MOLDEN
+            ao += INT_NCART(l);
           }
         }  // contraction loop
       }
