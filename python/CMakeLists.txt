@@ -96,19 +96,25 @@ endif()
 #   include_directories(${EIGEN3_INCLUDE_DIR})
 # endif()
 
-configure_file(setup.py.in ${PROJECT_BINARY_DIR}/setup.py)
+configure_file(pyproject.toml ${PROJECT_BINARY_DIR}/pyproject.toml @ONLY)
+
+# Install the Python module to the correct location for scikit-build-core
+install(TARGETS libint2-python
+  LIBRARY DESTINATION libint2
+  RUNTIME DESTINATION libint2
+)
 
 add_custom_target(
   libint2-python-test
   DEPENDS libint2-python
-  COMMAND ${Python_EXECUTABLE} -m setup test
+  COMMAND ${Python_EXECUTABLE} -m pytest ${CMAKE_CURRENT_SOURCE_DIR}/tests -v
   WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
   )
 
 add_custom_target(
   libint2-python-wheel
   DEPENDS libint2-python
-  COMMAND ${Python_EXECUTABLE} -m setup bdist_wheel
+  COMMAND ${Python_EXECUTABLE} -m build --wheel ${PROJECT_BINARY_DIR}
   WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
   )
 
@@ -117,6 +123,6 @@ enable_testing()
 # add the executable
 add_test(
   NAME libint2-python
-  COMMAND ${Python_EXECUTABLE} -m setup test
+  COMMAND ${Python_EXECUTABLE} -m pytest ${CMAKE_CURRENT_SOURCE_DIR}/tests -v
   WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
   )
