@@ -267,7 +267,7 @@ bool test_4eri(unsigned int deriv_order, unsigned int lmax_max) {
           am[1] = l1;
           am[2] = l2;
           am[3] = l3;
-          RandomShellSet<4u> rsqset(am, veclen, contrdepth);
+          RandomShellSet<4u> rsqset(am, veclen, contrdepth, 172530558);
 
           CartesianDerivIterator<4> diter(deriv_order);
           const unsigned int nderiv = diter.range_size();
@@ -626,7 +626,7 @@ bool test_3eri(unsigned int deriv_order, unsigned int lmax_max) {
         am[0] = l0;
         am[1] = l1;
         am[2] = l2;
-        RandomShellSet<3u> rsqset(am, veclen, contrdepth);
+        RandomShellSet<3u> rsqset(am, veclen, contrdepth, 201375807);
 
         CartesianDerivIterator<3> diter(deriv_order);
         const unsigned int nderiv = diter.range_size();
@@ -927,7 +927,7 @@ bool test_2eri(unsigned int deriv_order, unsigned int lmax_max) {
       unsigned int am[2];
       am[0] = l0;
       am[1] = l1;
-      RandomShellSet<2u> rsqset(am, veclen, contrdepth);
+      RandomShellSet<2u> rsqset(am, veclen, contrdepth, 68441551);
 
       CartesianDerivIterator<2> diter(deriv_order);
       const unsigned int nderiv = diter.range_size();

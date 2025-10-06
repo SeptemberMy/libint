@@ -559,7 +559,7 @@ TEST_CASE("Fortran ERI", "[eri]") {
   unsigned int veclen = 1;
 
   unsigned int contrdepth_u = contrdepth;
-  RandomShellSet<4u> rsqset(am, veclen, contrdepth_u);
+  RandomShellSet<4u> rsqset(am, veclen, contrdepth_u, 53754059);
 
   double *A = &(rsqset.R[0][0]);
   double *B = &(rsqset.R[1][0]);

@@ -34,15 +34,15 @@ typedef unsigned int uint;
 template <unsigned int N>
 struct RandomShellSet {
  public:
-  RandomShellSet(uint* am, uint veclen, uint contrdepth) {
+  RandomShellSet(uint* am, uint veclen, uint contrdepth,
+                 unsigned int seed = std::random_device{}()) {
     std::copy(am, am + N, l);
 
-    std::random_device rd;
-    std::mt19937 rng(rd());  // produces randomness out of thin air
+    std::mt19937 rng(seed);  // produces randomness out of thin air
     std::uniform_real_distribution<> rdist(0.7,
                                            1.3);  // distribution of coordinates
     std::uniform_real_distribution<> ecdist(
-        0.1, 3.0);  // distribution that exponents/coordinates
+        0.1, 3.0);  // distribution of exponents/coefficients
     // glues source randomness with mapping
     auto rdie = [&rng, &rdist]() -> double { return rdist(rng); };
     auto ecdie = [&rng, &ecdist]() -> double { return ecdist(rng); };
