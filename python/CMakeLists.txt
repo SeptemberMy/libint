@@ -6,8 +6,8 @@ endif()
 cmake_policy(SET CMP0079 NEW)
 
 if(NOT DEFINED LIBINT_VERSION)
-    # for indep bld of project(libint2-python), version not available from project(Libint2)
-    set(LIBINT_VERSION "2.11.0")  # for version for setup.py from libtool+cmake
+    # for indep build of project(libint2-python), version not available from project(Libint2)
+    set(LIBINT_VERSION "2.11.0")  # keep synched to the configure.in and export/cmake/CMakeLists.txt.export
 endif()
 
 project(libint2-python)
@@ -16,8 +16,8 @@ if (NOT TARGET Python::Module)
     find_package(Python COMPONENTS Interpreter Development REQUIRED)
 endif()
 
-find_package(pybind11 2.6.0 CONFIG)
-if (NOT TARGET pybind11::pybind11)
+find_package(pybind11 3.0.0 CONFIG)
+if (NOT TARGET pybind11::module)
     message(STATUS "Suitable pybind11 could not be located, building pybind11 instead.")
 
     # [LAB May 2023] For a long time this was fixed at v2.4.3 from a Valeev group clone.
@@ -25,13 +25,16 @@ if (NOT TARGET pybind11::pybind11)
     #  * so bumping the backup tag to v2.6.0 (c.2021). the v2.4.3 could probably be revived if needed.
     include(FetchContent)
     FetchContent_Declare(
-      pybind11
-      GIT_REPOSITORY      https://github.com/ValeevGroup/pybind11.git
-      GIT_TAG             ValeevGroup/v2.11
-      )
+            pybind11
+            GIT_REPOSITORY "https://github.com/pybind/pybind11.git"
+            GIT_TAG "v3.0.1"
+            GIT_SHALLOW
+            EXCLUDE_FROM_ALL
+            SYSTEM
+    )
 
     FetchContent_MakeAvailable(pybind11)
-    set(pybind11_VERSION "2.11")  # getting the fetched version isn't reliable from ${CMAKE_PROJECT_VERSION}), so sync explicitly from tag above
+    set(pybind11_VERSION "3.0.1")  # getting the fetched version isn't reliable from ${CMAKE_PROJECT_VERSION}), so sync explicitly from tag above
 endif()
 
 if (pybind11_VERSION VERSION_GREATER_EQUAL 2.11.0)
