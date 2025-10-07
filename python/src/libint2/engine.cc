@@ -144,16 +144,57 @@ void parallel_for(Task &&task, int num_threads, const Range &A, const Range &B,
 
 template <class... Args>
 py::object parallel_compute(libint2::Engine &engine, const Args &...args) {
-  py::array_t<double> V({nbf(args)...});
+  // Allocate raw storage without Python API
+  std::vector<size_t> dims = {nbf(args)...};
+  size_t total_size = 1;
+  for (auto d : dims) total_size *= d;
+  std::vector<double> V_data(total_size, 0.0);
+
   auto task = [&, engine](auto... braket) mutable {
-    auto v = compute(engine, std::get<0>(braket)...);
-    if (v.is_none()) return;
-    auto idx = py::make_tuple(basis::slice<py::slice>(braket)...);
-    V[idx] = v;
+    // Compute the integral - this does not use Python API
+    engine.compute(std::get<0>(braket)...);
+    const auto &buf = engine.results();
+    if (!buf[0]) return;
+
+    // Get shell sizes and basis function offsets
+    std::vector<size_t> shell_sizes = {std::get<0>(braket).size()...};
+    std::vector<size_t> bf_offsets = {
+        static_cast<size_t>(std::get<1>(braket))...};
+
+    // Calculate strides for the output array
+    std::vector<size_t> strides(dims.size());
+    strides.back() = 1;
+    for (int i = strides.size() - 2; i >= 0; --i) {
+      strides[i] = strides[i + 1] * dims[i + 1];
+    }
+
+    // Recursively copy data from buffer to V_data
+    std::function<void(size_t, size_t, size_t)> copy_data;
+    copy_data = [&](size_t dim, size_t buf_idx, size_t v_base_idx) {
+      if (dim == dims.size()) {
+        V_data[v_base_idx] = buf[0][buf_idx];
+        return;
+      }
+      for (size_t i = 0; i < shell_sizes[dim]; ++i) {
+        size_t v_idx = v_base_idx + (bf_offsets[dim] + i) * strides[dim];
+        size_t buf_stride = 1;
+        for (size_t d = dim + 1; d < dims.size(); ++d) {
+          buf_stride *= shell_sizes[d];
+        }
+        copy_data(dim + 1, buf_idx + i * buf_stride, v_idx);
+      }
+    };
+
+    copy_data(0, 0, 0);
   };
-  size_t num_threads = 1;
-  parallel_for(task, num_threads, basis::enumerate(args)...);
-  return V;
+
+  parallel_for(task, num_threads(), basis::enumerate(args)...);
+
+  // Convert to Python array after all threads complete (no GIL issues)
+  py::array_t<double> result(dims);
+  auto result_ptr = result.mutable_data();
+  std::copy(V_data.begin(), V_data.end(), result_ptr);
+  return result;
 }
 
 template <class Arg>
