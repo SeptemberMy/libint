@@ -138,9 +138,9 @@ std::vector<double> coeffs_normalized(const Shell &s) {
 
 PYBIND11_MODULE(libint2, m) {
   py::enum_<SHGShellOrdering>(m, "SHGShellOrdering")
-      .value("SHGShellOrdering_Standard", libint2::SHGShellOrdering_Standard)
-      .value("SHGShellOrdering_Gaussian", libint2::SHGShellOrdering_Gaussian)
-      .value("SHGShellOrdering_MOLDEN", libint2::SHGShellOrdering_Gaussian);
+      .value("Standard", libint2::SHGShellOrdering_Standard)
+      .value("Gaussian", libint2::SHGShellOrdering_Gaussian)
+      .value("MOLDEN", libint2::SHGShellOrdering_Gaussian);
 
   libint2::initialize();
 
@@ -251,6 +251,9 @@ PYBIND11_MODULE(libint2, m) {
   m.def("sto3g_num_ao", &libint2::sto3g_num_ao);
   m.def("sto3g_ao_occupation_vector",
         &libint2::sto3g_ao_occupation_vector<double>);
+
+  m.def("solid_harmonics_ordering", &libint2::solid_harmonics_ordering);
+  m.def("set_solid_harmonics_ordering", &libint2::set_solid_harmonics_ordering);
 
   using SolidHarmonicsCoefficients =
       libint2::solidharmonics::SolidHarmonicsCoefficients<double>;
