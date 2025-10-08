@@ -154,7 +154,8 @@ py::object parallel_compute(libint2::Engine &engine, const Args &...args) {
   const std::array<size_t, N> dims = {nbf(args)...};
   py::array_t<double> result(dims);
   auto result_ptr = result.mutable_data();
-  Eigen::TensorMap<Eigen::Tensor<double, N>> V(result_ptr, dims);
+  Eigen::TensorMap<Eigen::Tensor<double, N, Eigen::RowMajor>> V(result_ptr,
+                                                                dims);
 
   auto task = [&, engine](auto... braket) mutable {
     // Compute the integral - this does not use Python API
@@ -169,9 +170,8 @@ py::object parallel_compute(libint2::Engine &engine, const Args &...args) {
 
     auto V_sh = V.slice(bf_offsets, shell_sizes);
     // N.B. Libint returns shells sets in row-major layout
-    V_sh = Eigen::TensorLayoutSwapOp<Eigen::Tensor<double, N, Eigen::RowMajor>>(
-        Eigen::TensorMap<Eigen::Tensor<const double, N, Eigen::RowMajor>>(
-            buf[0], shell_sizes));
+    V_sh = Eigen::TensorMap<Eigen::Tensor<const double, N, Eigen::RowMajor>>(
+        buf[0], shell_sizes);
   };
 
   parallel_for(task, num_threads(), basis::enumerate(args)...);
