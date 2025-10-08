@@ -348,14 +348,14 @@ if (LIBINT_HAS_CXX_API)
   if(WIN32)
     # Windows does not include <cmath> constants, unless _USE_MATH_DEFINES is defined.
     target_compile_definitions(
-      libint2_cxx
+      libint2_cxx_prerequisites
       INTERFACE
         _USE_MATH_DEFINES
     )
     if(MSVC)
       # _CRT_* to squash some getenv, strdup, strncpy, ctime, fopen warnings
       target_compile_definitions(
-        libint2_cxx
+        libint2_cxx_prerequisites
         INTERFACE
         _CRT_NONSTDC_NO_DEPRECATE
         _CRT_NONSTDC_NO_WARNINGS
@@ -363,7 +363,7 @@ if (LIBINT_HAS_CXX_API)
       )
       # Set the exception handling model
       target_compile_options(
-        libint2_cxx
+        libint2_cxx_prerequisites
         INTERFACE
           "/EHsc"
       )
