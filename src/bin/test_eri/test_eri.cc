@@ -95,7 +95,7 @@ int main(int argc, char** argv) {
   const uint contrdepth = 1;
 #endif
   const uint contrdepth4 = contrdepth * contrdepth * contrdepth * contrdepth;
-  RandomShellSet<4> rsqset(am, veclen, contrdepth);
+  RandomShellSet<4> rsqset(am, veclen, contrdepth, 235243466);
 
   const unsigned int deriv_order = 0;
   CartesianDerivIterator<4> diter(deriv_order);

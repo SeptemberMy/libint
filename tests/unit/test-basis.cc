@@ -56,6 +56,7 @@ TEST_CASE("Basis", "[basis]") {
                            "6-31g*",
                            "6-31g**",
                            "ano-rcc",
+                           "ano-rcc-mb",
                            "aug-cc-pv5z-cabs",
                            "aug-cc-pvdz-cabs",
                            "aug-cc-pvqz-cabs",
@@ -65,6 +66,7 @@ TEST_CASE("Basis", "[basis]") {
                            "augmentation-cc-pv5z-ri",
                            "augmentation-cc-pv6z",
                            "augmentation-cc-pv6z-ri",
+                           "augmentation-cc-pv7z",
                            "augmentation-cc-pvdz",
                            "augmentation-cc-pvdz-jkfit",
                            "augmentation-cc-pvdz-ri",
@@ -79,6 +81,7 @@ TEST_CASE("Basis", "[basis]") {
                            "cc-pv5z-ri",
                            "cc-pv6z",
                            "cc-pv6z-ri",
+                           "cc-pv7z",
                            "cc-pvdz",
                            "cc-pvdz-f12",
                            "cc-pvdz-f12-cabs",
@@ -130,6 +133,8 @@ TEST_CASE("Basis", "[basis]") {
                            "def2-tzvppd",
                            "def2-tzvppd-c",
                            "mini",
+                           "sap_grasp_large",
+                           "sap_helfem_large",
                            "sto-3g",
                            "sto-6g"})
       test(bs_name);
@@ -137,7 +142,7 @@ TEST_CASE("Basis", "[basis]") {
 
   SECTION("composite basis sets") {
     for (auto&& bs_name : {"aug-cc-pv5z", "aug-cc-pv5z-jkfit", "aug-cc-pv5z-ri",
-                           "aug-cc-pv6z", "aug-cc-pv6z-ri", "aug-cc-pvdz",
+                           "aug-cc-pv6z", "aug-cc-pv6z-ri", "aug-cc-pv7z", "aug-cc-pvdz",
                            "aug-cc-pvdz-jkfit", "aug-cc-pvdz-ri", "aug-cc-pvqz",
                            "aug-cc-pvqz-jkfit", "aug-cc-pvqz-ri", "aug-cc-pvtz",
                            "aug-cc-pvtz-jkfit", "aug-cc-pvtz-ri"})

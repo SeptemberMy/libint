@@ -267,7 +267,7 @@ bool test_4eri(unsigned int deriv_order, unsigned int lmax_max) {
           am[1] = l1;
           am[2] = l2;
           am[3] = l3;
-          RandomShellSet<4u> rsqset(am, veclen, contrdepth);
+          RandomShellSet<4u> rsqset(am, veclen, contrdepth, 172530558);
 
           CartesianDerivIterator<4> diter(deriv_order);
           const unsigned int nderiv = diter.range_size();
@@ -544,24 +544,27 @@ bool test_3eri(unsigned int deriv_order, unsigned int lmax_max) {
 #if INCLUDE_ERI3 >= 4
   if (deriv_order == 4) lmax = LIBINT2_MAX_AM_3eri4;
 #endif
+
+  const auto lmax_init = std::max(lmax, lmax_default);
+
   Libint_t* inteval = libint2::malloc<Libint_t>(max_contrdepth3);
   if (deriv_order == 0)
-    LIBINT2_PREFIXED_NAME(libint2_init_3eri)(&inteval[0], lmax, 0);
+    LIBINT2_PREFIXED_NAME(libint2_init_3eri)(&inteval[0], lmax_init, 0);
 #if INCLUDE_ERI3 >= 1
   if (deriv_order == 1)
-    LIBINT2_PREFIXED_NAME(libint2_init_3eri1)(&inteval[0], lmax, 0);
+    LIBINT2_PREFIXED_NAME(libint2_init_3eri1)(&inteval[0], lmax_init, 0);
 #endif
 #if INCLUDE_ERI3 >= 2
   if (deriv_order == 2)
-    LIBINT2_PREFIXED_NAME(libint2_init_3eri2)(&inteval[0], lmax, 0);
+    LIBINT2_PREFIXED_NAME(libint2_init_3eri2)(&inteval[0], lmax_init, 0);
 #endif
 #if INCLUDE_ERI3 >= 3
   if (deriv_order == 3)
-    LIBINT2_PREFIXED_NAME(libint2_init_3eri3)(&inteval[0], lmax, 0);
+    LIBINT2_PREFIXED_NAME(libint2_init_3eri3)(&inteval[0], lmax_init, 0);
 #endif
 #if INCLUDE_ERI3 >= 4
   if (deriv_order == 4)
-    LIBINT2_PREFIXED_NAME(libint2_init_3eri4)(&inteval[0], lmax, 0);
+    LIBINT2_PREFIXED_NAME(libint2_init_3eri4)(&inteval[0], lmax_init, 0);
 #endif
 #ifdef LIBINT2_FLOP_COUNT
   LIBINT2_PREFIXED_NAME(libint2_init_flopcounter)(&inteval[0], max_contrdepth3);
@@ -573,7 +576,7 @@ bool test_3eri(unsigned int deriv_order, unsigned int lmax_max) {
 
   // reference code only supports Cartesian gaussians
 #if ERI3_PURE_SH
-  lmax0 = 1;
+  lmax0 = std::min(lmax0, 1u);
 #endif
 
   for (unsigned int l0 = 0; l0 <= lmax0; ++l0) {
@@ -623,7 +626,7 @@ bool test_3eri(unsigned int deriv_order, unsigned int lmax_max) {
         am[0] = l0;
         am[1] = l1;
         am[2] = l2;
-        RandomShellSet<3u> rsqset(am, veclen, contrdepth);
+        RandomShellSet<3u> rsqset(am, veclen, contrdepth, 201375807);
 
         CartesianDerivIterator<3> diter(deriv_order);
         const unsigned int nderiv = diter.range_size();
@@ -891,7 +894,7 @@ bool test_2eri(unsigned int deriv_order, unsigned int lmax_max) {
 
   // reference code only supports Cartesian gaussians
 #if ERI2_PURE_SH
-  lmax = 1;
+  lmax = std::min(lmax, 1u);
 #endif
 
   for (unsigned int l0 = 0; l0 <= lmax; ++l0) {
@@ -924,7 +927,7 @@ bool test_2eri(unsigned int deriv_order, unsigned int lmax_max) {
       unsigned int am[2];
       am[0] = l0;
       am[1] = l1;
-      RandomShellSet<2u> rsqset(am, veclen, contrdepth);
+      RandomShellSet<2u> rsqset(am, veclen, contrdepth, 68441551);
 
       CartesianDerivIterator<2> diter(deriv_order);
       const unsigned int nderiv = diter.range_size();

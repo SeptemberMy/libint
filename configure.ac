@@ -1,4 +1,4 @@
-define([libint_mmm_version],[2.9.0])
+define([libint_mmm_version],[2.11.0])
 define([libint_buildid],[])
 define([libint_so_version],[2:3:0])
 
@@ -226,7 +226,7 @@ case $enableval in
   ;;
 esac
 ])
-if test X$DISABLE_ONEBODY_PROPERTY_DERIVS != 0; then
+if test $DISABLE_ONEBODY_PROPERTY_DERIVS != 0; then
   AC_DEFINE(DISABLE_ONEBODY_PROPERTY_DERIVS)
 fi
 

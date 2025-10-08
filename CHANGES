@@ -3,6 +3,26 @@
 
 Following is a brief summary of changes made in each release of Libint.
 
+- 2025-04-24: 2.11.0
+  - PR #364: fix eritest segfaults with atypical L combinations
+  - PR #365: use Gaussian fit of Slater geminal for exceptional parameter values
+
+- 2025-04-08: 2.10.2
+  - PR #360: CMake targets can be consumed from the build tree (e.g., usable via FetchContent)
+
+- 2025-04-07: 2.10.1
+  - PR #358: introduced libint2_cxx-static CMake TARGET
+  - PR #357: fixup ANO-RCC-MB basis set definition (amends PR #354)
+
+- 2025-04-05: 2.10.0
+  - PR #354: added ANO-RCC-MB basis sets (HT @kshitij-05)
+  - PR #352: added correlation-consistent 7Z basis sets (HT @powellsr)
+  - PR #350: vector traits for simd::VectorAVXFloat (HT @johannes-menzel)
+  - PR #346: added atomic potentials (fitted to Gaussians) used for Superposition of Atomic Potentials (HT @kshitij-05)
+  - PR #345: fixes Molden file generation in presence of solid harmonic p shells (HT @dmejiar)
+  - PR #342: build fixes for MinGW-w64 (HT @MehdiChinoune)
+  - PR #340: derivatives of Cartesian electric multipoles (HT @EricaCMitchell)
+
 - 2024-03-04: 2.9.0
   - PR #335: l->symbol map reuse + other misc improvements
   - PR #334: bump Catch2 to 2.13.10 (HT @hrnagel)

@@ -60,6 +60,8 @@
 #include <omp.h>
 #endif
 
+#include <cstring>
+
 /// to use precomputed shell pair data must decide on max precision a priori
 const auto max_engine_precision = std::numeric_limits<double>::epsilon() / 1e10;
 
@@ -516,15 +518,19 @@ int main(int argc, char* argv[]) {
 
     printf("** Hartree-Fock energy = %20.12f\n", ehf + enuc);
 
-    // dump orbs to a molden file
-    {
+    // try dumping orbs to a molden file
+    try {
       Eigen::VectorXd occs(C.cols());
       occs.setZero();
       for (size_t o = 0; o != ndocc; ++o) occs[o] = 2.0;
 
       libint2::molden::Export xport(atoms, obs, C, occs, evals);
-      std::ofstream molden_file("hf++.molden");
+      const auto molden_file_name = "hf++.molden";
+      std::ofstream molden_file(molden_file_name);
       xport.write(molden_file);
+      std::cout << "wrote orbitals to " << molden_file_name << std::endl;
+    } catch (std::logic_error& e) {
+      if (std::strstr(e.what(), "molden::Export") == nullptr) throw e;
     }
 
     auto Mu = compute_1body_ints<Operator::emultipole3>(obs);
