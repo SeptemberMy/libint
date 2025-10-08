@@ -243,3 +243,37 @@ TEST_CASE_METHOD(libint2::unit::DefaultFixture, "W correctness",
   }
 #endif  // LIBINT2_SUPPORT_ONEBODY
 }
+
+// verify that python/tests/test_libint2.py:test_integrals is correct
+TEST_CASE_METHOD(libint2::unit::DefaultFixture, "python correctness",
+                 "[engine][1-body]") {
+#if defined(LIBINT2_SUPPORT_ONEBODY)
+  std::vector<Shell> obs{Shell{{1.0}, {{1, true, {10.0}}}, {{0.0, 0.0, 0.0}}},
+                         Shell{{1.0}, {{2, true, {10.0}}}, {{0.1, 0.2, 0.3}}}};
+  constexpr int l0 = 1;
+  constexpr int l1 = 2;
+  constexpr int n1 = 2 * l1 + 1;
+
+  {
+    const auto lmax = LIBINT2_MAX_AM_overlap;
+    if (lmax >= 2) {
+      auto engine = Engine(Operator::overlap, 2, lmax);
+
+      engine.compute(obs[0], obs[1]);
+
+      // this is laid out in standard solids order
+      //      REQUIRE(engine.results()[0][0] == Approx(-0.08950980671097111));
+      //      REQUIRE(engine.results()[0][1] == Approx(-0.2685294201329133));
+      //      REQUIRE(engine.results()[0][5] == Approx(0.0055943629194356937));
+      std::vector<double> shellset_ref_standard = {
+          -0.0895098067109711,  -0.268529420132913, 0.114661696280563,
+          0.00559436291943569,  0.183681582521472,  0.00559436291943569,
+          -0.169695675222883,   -0.312493496201254, -0.0848478376114413,
+          -0.00419577218957676, -0.184613976341378, 0.00559436291943569,
+          0.0573308481402817,   -0.276920964512067, -0.0946379727204538};
+
+      LIBINT2_TEST_ONEBODY(1.0, 0);
+    }
+  }
+#endif  // LIBINT2_SUPPORT_ONEBODY
+}
