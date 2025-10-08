@@ -69,20 +69,20 @@ jobs:
         echo "EIGEN3_INCLUDE_DIR=/usr/local/include/eigen3" >> $GITHUB_ENV
         echo "GMP_INCLUDE_DIR=/opt/homebrew/Cellar/gmp/6.3.0/include" >> $GITHUB_ENV
         echo "GMP_LIBRARY_DIR=/opt/homebrew/Cellar/gmp/6.3.0/lib" >> $GITHUB_ENV
-        echo "BOOST_INCLUDE_DIR=/opt/homebrew/Cellar/boost/1.88.0/include" >> $GITHUB_ENV
-        ls -l /opt/homebrew/Cellar/boost/1.88.0/include
+        echo "BOOST_INCLUDE_DIR=/opt/homebrew/Cellar/boost/1.89.0/include" >> $GITHUB_ENV
+        ls -l /opt/homebrew/Cellar/boost/1.89.0/include
         brew info python@3.11
         ls -l /opt/homebrew/Cellar/python@3.11/*
         brew info gcc@11
         ls -l /opt/homebrew/Cellar/gcc@11/*/bin
-        pip3.11 install scipy
-        
+        pip3.11 install scipy scikit-build-core build pytest
 
     - name: Install prerequisites Ubuntu packages
       if: ${{ steps.skip_check.outputs.should_skip != 'true' && matrix.os == 'ubuntu-24.04' }}
       run: |
         sudo apt-get update
-        sudo apt-get install ninja-build gfortran liblapack-dev libboost-dev libeigen3-dev ccache python3-numpy python3-scipy
+        sudo apt-get install ninja-build gfortran liblapack-dev libboost-dev libeigen3-dev ccache python3-numpy python3-scipy python3-pip
+        pip3 install --break-system-packages scikit-build-core build pytest
         echo "FC=/usr/bin/gfortran" >> $GITHUB_ENV
         echo "EIGEN3_INCLUDE_DIR=/usr/include/eigen3" >> $GITHUB_ENV
 
@@ -134,7 +134,7 @@ jobs:
 
     - name: Archive Library Tarball
       if: ${{ steps.skip_check.outputs.should_skip != 'true' && matrix.build_type == 'Release'}}
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v4.4.0
       with:
         if-no-files-found: error
         name: ${{ runner.os }}-${{ matrix.cxx }}
@@ -268,6 +268,9 @@ jobs:
           - numpy
           - scipy
           - pybind11
+          - scikit-build-core
+          - build
+          - pytest
           #- dpcpp_linux-64
         EOF
         if [[ "${{ runner.os }}" == "Windows" ]]; then
@@ -279,9 +282,9 @@ jobs:
         cat export.yaml
 
     - name: Create Conda Environment
-      uses: conda-incubator/setup-miniconda@v2
+      uses: conda-incubator/setup-miniconda@v3
       with:
-        miniforge-variant: Mambaforge
+        miniforge-variant: Miniforge3
         use-mamba: true
         python-version: "3.9"
         activate-environment: test
@@ -301,9 +304,9 @@ jobs:
       with:
         arch: x64
 
-    - uses: actions/download-artifact@v3
+    - uses: actions/download-artifact@v4.1.7
       with:
-        name: Linux-g++-10
+        name: Linux-g++
 
     - name: Extract, Build, Install Libint Library
       shell: bash -l {0}

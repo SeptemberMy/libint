@@ -171,7 +171,8 @@ namespace libint2 {
               } // shell loop
             }
             else if (throw_if_no_match) {  // not found? throw, if needed
-              std::string errmsg(std::string("did not find the basis for this Z in ") +
+              std::string errmsg(std::string("did not find the basis for Z=") +
+                      std::to_string(Z) + " in " +
                       basis_lib_path + PATH_SEPARATOR + basis_component_names[comp_idx] + ".g94");
               throw std::logic_error(errmsg);
             }
