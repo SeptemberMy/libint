@@ -1,3 +1,23 @@
+/*
+ *  Copyright (C) 2004-2024 Edward F. Valeev
+ *
+ *  This file is part of Libint library.
+ *
+ *  Libint library is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Lesser General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  Libint library is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with Libint library.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
+
 #include "catch.hpp"
 #include "fixture.h"
 
@@ -182,19 +202,6 @@ TEST_CASE_METHOD(libint2::unit::DefaultFixture, "W correctness",
       }
       {
         std::vector<double> shellset_ref_standard = {
-            -2.49761988715857e-04, 1.65958345836693e+00,  3.34242295115910e-03,
-            -1.66148554416249e+00, -3.03391179873709e+00, 1.49079297243232e+00,
-            8.00331729579887e-01,  -6.80731543814720e-01, 4.72634239043335e-01,
-            -1.19318769283081e+00, 1.11521084365706e-03,  1.33833228953250e-02,
-            -6.62037517969870e-03, 1.19969136764911e-02,  -1.05965708465147e-03,
-            -1.48836792336934e+00, -4.67132013887958e-01, 6.74189183691556e-01,
-            -8.03426805711286e-01, -1.18966404475986e+00, -1.44170566149487e+00,
-            -2.10343679084144e+00, -1.89380199837230e+00, -2.10786126986013e+00,
-            7.49910831098100e-04};
-        LIBINT2_TEST_ONEBODY(1.0, 1);
-      }
-      {
-        std::vector<double> shellset_ref_standard = {
             -7.88373054495278e-01, -5.92741140473083e-01, 7.18456828001176e-02,
             -6.39138844263037e-01, 2.20726461230564e-01,  -5.92585516679938e-01,
             2.34732079397513e-01,  1.73416688435562e+00,  2.02375318329227e+00,
@@ -204,7 +211,7 @@ TEST_CASE_METHOD(libint2::unit::DefaultFixture, "W correctness",
             1.15541165536756e+00,  -1.13849207132631e-02, 4.18505962024446e-01,
             1.90312514813159e-01,  -6.40076159142129e-01, 8.81020773424062e-01,
             1.05645673339062e+00};
-        LIBINT2_TEST_ONEBODY(1.0, 2);
+        LIBINT2_TEST_ONEBODY(1.0, 1);
       }
       {
         std::vector<double> shellset_ref_standard = {
@@ -217,8 +224,55 @@ TEST_CASE_METHOD(libint2::unit::DefaultFixture, "W correctness",
             -2.38135136433799e-01, 3.34943994067535e-02,  4.38398996368850e-01,
             8.80143879113653e-01,  -6.47475279081898e-01, 1.99006135765209e-01,
             -1.06105366740987e+00};
+        LIBINT2_TEST_ONEBODY(1.0, 2);
+      }
+      {
+        std::vector<double> shellset_ref_standard = {
+            -2.49761988715857e-04, 1.65958345836693e+00,  3.34242295115910e-03,
+            -1.66148554416249e+00, -3.03391179873709e+00, 1.49079297243232e+00,
+            8.00331729579887e-01,  -6.80731543814720e-01, 4.72634239043335e-01,
+            -1.19318769283081e+00, 1.11521084365706e-03,  1.33833228953250e-02,
+            -6.62037517969870e-03, 1.19969136764911e-02,  -1.05965708465147e-03,
+            -1.48836792336934e+00, -4.67132013887958e-01, 6.74189183691556e-01,
+            -8.03426805711286e-01, -1.18966404475986e+00, -1.44170566149487e+00,
+            -2.10343679084144e+00, -1.89380199837230e+00, -2.10786126986013e+00,
+            7.49910831098100e-04};
         LIBINT2_TEST_ONEBODY(1.0, 3);
       }
+    }
+  }
+#endif  // LIBINT2_SUPPORT_ONEBODY
+}
+
+// verify that python/tests/test_libint2.py:test_integrals is correct
+TEST_CASE_METHOD(libint2::unit::DefaultFixture, "python correctness",
+                 "[engine][1-body]") {
+#if defined(LIBINT2_SUPPORT_ONEBODY)
+  std::vector<Shell> obs{Shell{{1.0}, {{1, true, {10.0}}}, {{0.0, 0.0, 0.0}}},
+                         Shell{{1.0}, {{2, true, {10.0}}}, {{0.1, 0.2, 0.3}}}};
+  constexpr int l0 = 1;
+  constexpr int l1 = 2;
+  constexpr int n1 = 2 * l1 + 1;
+
+  {
+    const auto lmax = LIBINT2_MAX_AM_overlap;
+    if (lmax >= 2) {
+      auto engine = Engine(Operator::overlap, 2, lmax);
+
+      engine.compute(obs[0], obs[1]);
+
+      // this is laid out in standard solids order
+      //      REQUIRE(engine.results()[0][0] == Approx(-0.08950980671097111));
+      //      REQUIRE(engine.results()[0][1] == Approx(-0.2685294201329133));
+      //      REQUIRE(engine.results()[0][5] == Approx(0.0055943629194356937));
+      std::vector<double> shellset_ref_standard = {
+          -0.0895098067109711,  -0.268529420132913, 0.114661696280563,
+          0.00559436291943569,  0.183681582521472,  0.00559436291943569,
+          -0.169695675222883,   -0.312493496201254, -0.0848478376114413,
+          -0.00419577218957676, -0.184613976341378, 0.00559436291943569,
+          0.0573308481402817,   -0.276920964512067, -0.0946379727204538};
+
+      LIBINT2_TEST_ONEBODY(1.0, 0);
     }
   }
 #endif  // LIBINT2_SUPPORT_ONEBODY

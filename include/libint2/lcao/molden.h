@@ -1,20 +1,20 @@
 /*
- *  Copyright (C) 2004-2023 Edward F. Valeev
+ *  Copyright (C) 2004-2024 Edward F. Valeev
  *
- *  This file is part of Libint.
+ *  This file is part of Libint library.
  *
- *  Libint is free software: you can redistribute it and/or modify
+ *  Libint library is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Lesser General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
  *
- *  Libint is distributed in the hope that it will be useful,
+ *  Libint library is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
  *
  *  You should have received a copy of the GNU Lesser General Public License
- *  along with Libint.  If not, see <http://www.gnu.org/licenses/>.
+ *  along with Libint library.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
 
@@ -250,11 +250,6 @@ class Export {
               "molden::Export cannot handle shells with l > 4");
 
         switch (contr.l) {
-          case 1:
-            if (contr.pure)
-              throw std::logic_error(
-                  "molden::Export cannot handle solid harmonics p shells");
-            break;
           case 2:
           case 3:
           case 4: {
@@ -269,7 +264,7 @@ class Export {
           }
 
           default: {
-          }  // l = 0 is fine
+          }  // l = 0 && 1 are fine
         }
       }
     }
@@ -300,18 +295,35 @@ class Export {
           const auto pure = shell.contr[c].pure;
           if (pure) {
             int m;
-            FOR_SOLIDHARM_MOLDEN(l, m)
-            const auto ao_in_shell = libint2::INT_SOLIDHARMINDEX(l, m);
-            ao_map_[ao_molden] = ao + ao_in_shell;
-            ++ao_molden;
-            END_FOR_SOLIDHARM_MOLDEN
+            // Molden only handles Cartesian p shells, thus remap solid-harmonic
+            // p shells to Cartesians:
+            // - CCA: solid harmonics {y, z, x} -> Cartesian {x, y, z}
+            // - Gaussian: solid harmonics {z, x, y} -> Cartesian {x, y, z}
+            if (l == 1) {
+#if LIBINT_SHGSHELL_ORDERING == LIBINT_SHGSHELL_ORDERING_STANDARD
+              ao_map_[ao_molden] = ao + 2;
+              ao_map_[ao_molden + 1] = ao;
+              ao_map_[ao_molden + 2] = ao + 1;
+#elif LIBINT_SHGSHELL_ORDERING == LIBINT_SHGSHELL_ORDERING_GAUSSIAN
+              ao_map_[ao_molden] = ao + 1;
+              ao_map_[ao_molden + 1] = ao + 2;
+              ao_map_[ao_molden + 2] = ao;
+#else
+#error "unknown value of LIBINT_SHGSHELL_ORDERING"
+#endif
+              ao_molden += 3;
+            } else {
+              FOR_SOLIDHARM_MOLDEN(l, m)
+              const auto ao_in_shell = libint2::INT_SOLIDHARMINDEX(l, m);
+              ao_map_[ao_molden++] = ao + ao_in_shell;
+              END_FOR_SOLIDHARM_MOLDEN
+            }
             ao += 2 * l + 1;
           } else {
-            int i, j, k;
+            long i, j, k;
             FOR_CART_MOLDEN(i, j, k, l)
-            const auto ao_in_shell = INT_CARTINDEX(l, i, j);
-            ao_map_[ao_molden] = ao + ao_in_shell;
-            ++ao_molden;
+            const auto ao_in_shell = libint2::INT_CARTINDEX(l, i, j);
+            ao_map_[ao_molden++] = ao + ao_in_shell;
             END_FOR_CART_MOLDEN
             ao += INT_NCART(l);
           }

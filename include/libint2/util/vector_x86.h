@@ -1,20 +1,20 @@
 /*
- *  Copyright (C) 2004-2023 Edward F. Valeev
+ *  Copyright (C) 2004-2024 Edward F. Valeev
  *
- *  This file is part of Libint.
+ *  This file is part of Libint library.
  *
- *  Libint is free software: you can redistribute it and/or modify
+ *  Libint library is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Lesser General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
  *
- *  Libint is distributed in the hope that it will be useful,
+ *  Libint library is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
  *
  *  You should have received a copy of the GNU Lesser General Public License
- *  along with Libint.  If not, see <http://www.gnu.org/licenses/>.
+ *  along with Libint library.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
 
@@ -927,6 +927,40 @@ inline VectorAVXDouble erfc(VectorAVXDouble a) {
   return result;
 }
 
+};  // namespace simd
+};  // namespace libint2
+
+//@{ standard stream operations
+inline std::ostream& operator<<(std::ostream& os,
+                                libint2::simd::VectorAVXDouble a) {
+  double ad[4];
+  a.convert(ad);
+  os << "{" << ad[0] << "," << ad[1] << "," << ad[2] << "," << ad[3] << "}";
+  return os;
+}
+
+namespace libint2 {
+
+//@{ vector traits of VectorAVXDouble
+
+template <>
+struct is_vector<simd::VectorAVXDouble> {
+  static const bool value = true;
+};
+
+template <>
+struct vector_traits<simd::VectorAVXDouble> {
+  typedef double scalar_type;
+  static const size_t extent = 4;
+};
+
+//@}
+
+}  // namespace libint2
+
+namespace libint2 {
+namespace simd {
+
 /**
  * SIMD vector of 8 single-precision floating-point real numbers, operations on
  * which use AVX instructions available on recent x86 hardware from Intel
@@ -1151,15 +1185,6 @@ inline VectorAVXFloat erfc(VectorAVXFloat a) {
 
 //@{ standard stream operations
 inline std::ostream& operator<<(std::ostream& os,
-                                libint2::simd::VectorAVXDouble a) {
-  double ad[4];
-  a.convert(ad);
-  os << "{" << ad[0] << "," << ad[1] << "," << ad[2] << "," << ad[3] << "}";
-  return os;
-}
-
-//@{ standard stream operations
-inline std::ostream& operator<<(std::ostream& os,
                                 libint2::simd::VectorAVXFloat a) {
   float ad[8];
   a.convert(ad);
@@ -1171,17 +1196,17 @@ inline std::ostream& operator<<(std::ostream& os,
 
 namespace libint2 {
 
-//@{ vector traits of VectorAVXDouble
+//@{ vector traits of VectorAVXFloat
 
 template <>
-struct is_vector<simd::VectorAVXDouble> {
+struct is_vector<simd::VectorAVXFloat> {
   static const bool value = true;
 };
 
 template <>
-struct vector_traits<simd::VectorAVXDouble> {
-  typedef double scalar_type;
-  static const size_t extent = 4;
+struct vector_traits<simd::VectorAVXFloat> {
+  typedef float scalar_type;
+  static const size_t extent = 8;
 };
 
 //@}
