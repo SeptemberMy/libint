@@ -18,7 +18,7 @@ dynamic_version(
   PROJECT_PREFIX Libint2Compiler_
   GIT_ARCHIVAL_FILE ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules/.git_archival.txt
   OUTPUT_COMMIT LibintRepository_COMMIT
-  OUTPUT_VERSION LibintRepository_VERSION 
+  OUTPUT_VERSION LibintRepository_VERSION
   OUTPUT_DESCRIBE LibintRepository_DESCRIBE
   OUTPUT_DISTANCE LibintRepository_DISTANCE
   )
@@ -34,12 +34,12 @@ project(
   # * http://libint.valeyev.net/ redirects to https://github.com/evaleev/libint
 
 set(${PROJECT_NAME}_AUTHORS "Edward F. Valeev")
-set(${PROJECT_NAME}_LICENSE "GPL-3.0 for generator; LGPL-3.0 for generated")
+set(${PROJECT_NAME}_LICENSE "GPL-3.0-only for generator; LGPL-3.0-only for generated library")
 
 # along with project(... VERSION) above scanned by dynamic_version() from `git
 #   describe`, these are the authoritative version source (formerly in configure.ac)
 set(LIBINT_BUILDID "post999")
-set(LIBINT_SOVERSION "2:3:0")
+set(LIBINT_SO_VERSION "2:3:0")
 set(LIBINT_DOI "10.5281/zenodo.10369117")  # 2.8.0
 
 include(int_versions)
@@ -122,6 +122,34 @@ option_with_print(ENABLE_T1G12_SUPPORT
 
 #  <<<  Ordering Conventions  >>>
 
+option_with_default(LIBINT2_SHGAUSS_ORDERING
+  "Ordering for shells of solid harmonic Gaussians:
+    standard -- standard ordering (-l, -l+1 ... l)
+    gaussian -- the Gaussian ordering (0, 1, -1, 2, -2, ... l, -l)
+   See https://github.com/evaleev/libint/blob/master/INSTALL.md#solid-harmonic-ordering-scope-and-history ." standard)
+option_with_default(LIBINT2_CARTGAUSS_ORDERING
+  "Orderings for shells of cartesian Gaussians:
+    standard -- standard ordering (xxx, xxy, xxz, xyy, xyz, xzz, yyy, ...)
+    intv3  -- intv3 ordering (yyy, yyz, yzz, zzz, xyy, xyz, xzz, xxy, xxz, xxx)
+    gamess -- GAMESS ordering (xxx, yyy, zzz, xxy, xxz, yyx, yyz, zzx, zzy, xyz)
+    orca -- ORCA ordering (hydrid between GAMESS and standard)
+    bagel -- axis-permuted version of intv3 (xxx, xxy, xyy, yyy, xxz, xyz, yyz, xzz, yzz, zzz)" standard)
+option_with_default(LIBINT2_SHELL_SET
+  "Support computation of shell sets sets subject to these restrictions:
+    standard -- standard ordering:
+      for (ab|cd):
+        l(a) >= l(b),
+        l(c) >= l(d),
+        l(a)+l(b) <= l(c)+l(d)
+      for (b|cd):
+        l(c) >= l(d)
+    orca -- ORCA ordering:
+      for (ab|cd):
+        l(a) <= l(b),
+        l(c) <= l(d),
+        l(a) < l(c) || (l(a) == l(c) && l(b) < l(d))
+      for (b|cd):
+        l(c) <= l(d)" standard)
 
 #  <<<  How High Angular Momentum  >>>
 
@@ -190,6 +218,7 @@ option_with_default(WITH_G12DKH_OPT_AM
 
 ######################## Process & Validate Options ###########################
 include(FeatureSummary)
+include(int_orderings)
 include(int_am)
 
 booleanize01(ERI3_PURE_SH)
@@ -197,12 +226,36 @@ booleanize01(ERI2_PURE_SH)
 booleanize01(DISABLE_ONEBODY_PROPERTY_DERIVS)
 booleanize01(SUPPORT_T1G12)
 
+
 ################################## Main Project #################################
 
-configure_file(include/libint2/config.h.cmake.in include/libint2/config.h @ONLY)
+set(EXPORT_STAGE_DIR ${PROJECT_BINARY_DIR}/libint-${LIBINT_EXT_VERSION})
 
-# STRICTLY TEMPORARY FOR DEMONSTRATION PURPOSES
-configure_file(src/lib/libint/configuration.cc configuration.cc @ONLY)
+configure_file(
+  cmake/modules/int_computed.cmake.in
+  cmake/modules/int_computed.cmake
+  @ONLY)
+
+# CMake data transmitted to C++ via config.h for generator/compiler (_EXPORT_MODE=0).
+#   Same info is positioned for the library export, but _EXPORT_MODE=1 turns on
+#   inclusion of config2.h to be filled in later by user re-set-able options at
+#   library build time.
+set(_EXPORT_MODE 0)
+configure_file(
+  include/libint2/config.h.cmake.in
+  include/libint2/config.h
+  @ONLY)
+set(_EXPORT_MODE 1)
+configure_file(
+  include/libint2/config.h.cmake.in
+  ${EXPORT_STAGE_DIR}/include/libint2/config.h
+  @ONLY)
+configure_file(
+  include/libint2/config2.h.cmake.in
+  ${EXPORT_STAGE_DIR}/include/libint2/config2.h.cmake.in
+  COPYONLY)
+
+add_subdirectory(src)
 
 message("")
 feature_summary(WHAT ENABLED_FEATURES DESCRIPTION "Libint Enabled features:")

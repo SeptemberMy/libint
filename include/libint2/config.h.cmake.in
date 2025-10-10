@@ -26,6 +26,18 @@
 #ifndef _libint2_include_libint2config_h_
 #define _libint2_include_libint2config_h_
 
+/* The version number. */
+#cmakedefine LIBINT_VERSION "@LIBINT_VERSION@"
+
+/* The major version number. */
+#define LIBINT_MAJOR_VERSION @LIBINT_MAJOR_VERSION@
+
+/* The minor version number. */
+#define LIBINT_MINOR_VERSION @LIBINT_MINOR_VERSION@
+
+/* The micro version number. */
+#define LIBINT_MICRO_VERSION @LIBINT_MICRO_VERSION@
+
 /* Max AM (same for all derivatives; if not defined see LIBINT_MAX_AM_LIST) */
 #cmakedefine LIBINT_MAX_AM @LIBINT_MAX_AM@
 
@@ -142,12 +154,45 @@
 
 /* Support [Ti,G12] ? */
 #cmakedefine01 SUPPORT_T1G12
+#ifndef INCLUDE_G12
+#undef SUPPORT_T1G12
+#endif
 
 /* Max AM for G12DKH method integrals */
 #cmakedefine G12DKH_MAX_AM @G12DKH_MAX_AM@
 
 /* Max optimized AM for G12DKH method integrals */
 #cmakedefine G12DKH_OPT_AM @G12DKH_OPT_AM@
+
+/* Specifies the ordering of cartesian Gaussians in a shell. Allowed values are defined at the bottom of this file -- also see CMakeLists.txt */
+#cmakedefine LIBINT_CGSHELL_ORDERING @LIBINT_CGSHELL_ORDERING@
+
+/* Specifies the ordering of solid harmonics Gaussians in a shell. Allowed values are defined at the bottom of this file -- also see CMakeLists.txt */
+#cmakedefine LIBINT_SHGSHELL_ORDERING @LIBINT_SHGSHELL_ORDERING@
+
+/* Specifies the class of shell sets generated. Allowed values are defined at the bottom of this file -- also see CMakeLists.txt */
+#cmakedefine LIBINT_SHELL_SET @LIBINT_SHELL_SET@
+
+/*
+  Known orderings of cartesian Gaussians
+*/
+#cmakedefine LIBINT_CGSHELL_ORDERING_STANDARD @LIBINT_CGSHELL_ORDERING_STANDARD@
+#cmakedefine LIBINT_CGSHELL_ORDERING_INTV3    @LIBINT_CGSHELL_ORDERING_INTV3@
+#cmakedefine LIBINT_CGSHELL_ORDERING_GAMESS   @LIBINT_CGSHELL_ORDERING_GAMESS@
+#cmakedefine LIBINT_CGSHELL_ORDERING_ORCA     @LIBINT_CGSHELL_ORDERING_ORCA@
+#cmakedefine LIBINT_CGSHELL_ORDERING_BAGEL    @LIBINT_CGSHELL_ORDERING_BAGEL@
+
+/*
+  Known orderings of solid harmonic Gaussians
+*/
+#cmakedefine LIBINT_SHGSHELL_ORDERING_STANDARD @LIBINT_SHGSHELL_ORDERING_STANDARD@
+#cmakedefine LIBINT_SHGSHELL_ORDERING_GAUSSIAN @LIBINT_SHGSHELL_ORDERING_GAUSSIAN@
+
+/*
+  Known sets of shell sets
+*/
+#cmakedefine LIBINT_SHELL_SET_STANDARD @LIBINT_SHELL_SET_STANDARD@
+#cmakedefine LIBINT_SHELL_SET_ORCA     @LIBINT_SHELL_SET_ORCA@
 
 /* compiler type detection */
 #define LIBINT_COMPILER_ID_GNU 0
@@ -218,5 +263,9 @@
 
 /* maps angular momentum to the corresponding symbol: 0 -> s, 1 -> p, etc. */
 #define LIBINT_AM2SYMBOL "spdfghiklmnoqrtuvwxyz"
+
+#if @_EXPORT_MODE@
+#include "libint2/config2.h"
+#endif
 
 #endif /* header guard */
