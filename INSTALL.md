@@ -81,7 +81,7 @@ Note that options, docs, and CMake components are focused on the C++ interface, 
       "CMake Error: Generator: execution of make failed". Throttle it to physical threads with
       `export CMAKE_BUILD_PARALLEL_LEVEL=N`.
 
-* `WITH_MAX_AM` — G — Support Gaussians of angular momentum up to N. Can specify values for each derivative level as a semicolon-separated string. Specify values greater or equal to `WITH_<class>_MAX_AM`; often mirrors `WITH_ERI3_MAX_AM`. [Default=4]
+* `WITH_MAX_AM` — G — Support Gaussians of angular momentum up to N. If ERI3 ints are enabled, specifing values for each derivative level as a semicolon-separated string also controls the AM of the paired centers. [Default=4]
 * `WITH_OPT_AM` — G — Optimize maximally for up to angular momentum N (N <= WITH_MAX_AM). Can specify values for each derivative level as a semicolon-separated string. [Default=-1 -> `(WITH_MAX_AM/2)+1`]
 
 * `MULTIPOLE_MAX_ORDER` — G — Maximum order of spherical multipole integrals. There is no maximum. [Default=4]
@@ -251,21 +251,21 @@ Eventually, these will be CMake Components, too.
 
 ```
    multipole_hh_dD - library includes spherical multipole integrals with max angular momentum up to
-                     "h" (h=spdfghikl...; s,p not enumerated) and derivative order "D" (D=0,1,2,...).
+                     "h" (h=spdfghikl...) and derivative order "D" (D=0,1,2,...).
                      For example, the presence of "multipole_ii_d0" means mpole ints are available for L=6.
    onebody_hh_dD   - library includes 1-body integrals with max angular momentum up to "h"
-                     (h=spdfghikl...; s,p not enumerated) and derivative order "D" (D=0,1,2,...).
+                     (h=spdfghikl...) and derivative order "D" (D=0,1,2,...).
                      For example, the presence of "onebody_ii_d1" means onebody gradient ints are
                      available for L=6.
    eri_hhhh_dD     - library includes 2-body integrals with 4 centers and max angular momentum up to
-                     "h" (h=spdfghikl...; s,p not enumerated) and derivative order "D" (D=0,1,2,...).
+                     "h" (h=spdfghikl...) and derivative order "D" (D=0,1,2,...).
                      For example, the presence of "eri_ffff_d1" means 4-center gradient ints are
                      available for L=3. That is, the library was configured with at least
                      '-D ENABLE_ERI=1 -D WITH_ERI_MAX_AM="?;>=3"'.
    eri_hhL_dD      - library includes 2-body integrals with 3 centers and max angular momentum up to
    eri_hhl_dD        Cartesian "h" for the two paired centers and Cartesian "l" or solid harmonics "L"
                      for the unpaired/fitting center, (h/l=spdfghikl..., L=SPDFGHIKL...; l>=h
-                     enumerated; s,p,S,P not enumerated) and derivative order "D" (D=0,1,2,...). The
+                     enumerated) and derivative order "D" (D=0,1,2,...). The
                      "eri_hhL_dD" component is always available when 3-center ints are present. When pure
                      solid harmonics are assumed for 3-center ints, "eri_hhl_dD" will *not be available*.
                      For example, the presence of "eri_ffG_d0" means 3-center energy ints are
@@ -283,7 +283,7 @@ Eventually, these will be CMake Components, too.
                      '-D ENABLE_ERI2=2 -D WITH_ERI2_MAX_AM="?;?;>=3"'. The presence of "eri_ff_d2" means the
                      library configuration did not additionally include "-D ERI2_PURE_SH=ON".
    g12_hhhh_dD     - library includes F12 integrals with Gaussian factors and max angular momentum up to
-                     "h" (h=spdfghikl...; s,p not enumerated) and derivative order "D" (D=0,1,2,...).
+                     "h" (h=spdfghikl...) and derivative order "D" (D=0,1,2,...).
                      For example, the presence of "g12_iiii_d2" means g12 Hessian ints are available for L=6.
 
                                         cart       shell_set   used_by
@@ -302,20 +302,20 @@ Eventually, these will be CMake Components, too.
 
 ### Interfacing
 
-Eventually (approximately 2.9.0 CMake-based), additional functions will be available to retrive Libint version, commit, and literature citation. Below are outputs at the libtool stage.
+Eventually (approximately 2.10.0 CMake-based), additional functions will be available to retrive Libint version, commit, and literature citation. Below are outputs at the libtool stage.
 
 ```
 auto Mmp = libint2::libint_version();
 printf("Version: Numeric=%s Sortable=%s Commit=%s\n", libint2::libint_version_string(false).c_str(), libint2::libint_version_string(true).c_str(), libint2::libint_commit().c_str());
 printf("Version: Major=%d minor=%d patch=%d\n", std::get<0>(Mmp), std::get<1>(Mmp), std::get<2>(Mmp));
 printf("Citation: DOI=%s Ref=%s\n", libint2::libint_reference_doi().c_str(), libint2::libint_reference().c_str());
-printf("Citation: BibTex=%s\n", libint2::libint_bibtex().c_str());
+printf("Citation: BibTeX=%s\n", libint2::libint_bibtex().c_str());
 ```
 ```
 Version: Numeric=2.8.0 Sortable= Commit=
 Version: Major=2 minor=8 patch=0
 Citation: DOI= Ref=Libint: , Version  Edward F. Valeev, http://libint.valeyev.net/
-Citation: BibTex=@Misc{Libint2,
+Citation: BibTeX=@Misc{Libint2,
   author = {E.~F.~Valeev},
   title = {\textsc{Libint}: },
   howpublished = {http://libint.valeyev.net/},

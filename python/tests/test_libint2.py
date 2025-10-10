@@ -8,6 +8,7 @@ libint2.Engine.num_threads = 1
 
 s = Shell(0, [(1,10)])
 p = Shell(1, [(1,10)])
+d = Shell(2, [(1,10)], [0.1, 0.2, 0.3])
 
 h2o = [
   (8, [  0.00000, -0.07579, 0.00000 ]),
@@ -41,12 +42,12 @@ class TestLibint(unittest.TestCase):
       3.6563211198
     )
 
-    basis = [ s, p, s, p ]
-    self.assertAlmostEqual(libint2.overlap().compute(basis, basis).sum(), 16.0)
-    self.assertAlmostEqual(
-      norm(libint2.coulomb().compute(basis, basis, basis, basis)),
-      14.7036075402
-    )
+    if libint2.solid_harmonics_ordering() == libint2.SHGShellOrdering.Standard:
+        basis = [ p, d ]
+        S = libint2.overlap().compute(basis, basis)
+        self.assertAlmostEqual(S[0, 3], -0.08950980671097111)
+        self.assertAlmostEqual(S[0, 4], -0.26852942)
+        self.assertAlmostEqual(S[1, 3], 0.0055943629194356937)
 
 if __name__ == '__main__':
   unittest.main()

@@ -4,6 +4,10 @@ if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.24.0")
     # Avoid warning about DOWNLOAD_EXTRACT_TIMESTAMP in CMake 3.24:
     cmake_policy(SET CMP0135 NEW)
 endif()
+if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.25.0")
+    # needed by DynamicVersion
+    cmake_policy(SET CMP0140 NEW)
+endif()
 
 ############################# Version and Metadata #############################
 
@@ -161,8 +165,8 @@ option_with_default(LIBINT2_SHELL_SET
 
 option_with_default(WITH_MAX_AM
   "Support Gaussians of angular momentum up to N.
-   Can specify values for each derivative level as a semicolon-separated string.
-   If ERI3 ints are enabled, this option also controls the AM of the paired centers." 4)
+   If ERI3 ints are enabled, specifing values for each derivative level as a
+   semicolon-separated string also controls the AM of the paired centers." 4)
 option_with_default(WITH_OPT_AM
   "Optimize maximally for up to angular momentum N (N <= max-am).
    Can specify values for each derivative level as a semicolon-separated string. (default: (libint_max_am/2)+1)" -1)
