@@ -1,9 +1,41 @@
+/*
+ *  Copyright (C) 2004-2024 Edward F. Valeev
+ *
+ *  This file is part of Libint library.
+ *
+ *  Libint library is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Lesser General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  Libint library is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with Libint library.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
+
 #ifndef LIBINT2_PYTHON_BASIS_H
 #define LIBINT2_PYTHON_BASIS_H
 
 #include <libint2/basis.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
+
+#include <boost/container/small_vector.hpp>
+
+PYBIND11_NAMESPACE_BEGIN(PYBIND11_NAMESPACE)
+PYBIND11_NAMESPACE_BEGIN(detail)
+
+template <typename T, std::size_t N>
+struct type_caster<boost::container::small_vector<T, N> >
+    : list_caster<boost::container::small_vector<T, N>, T> {};
+
+PYBIND11_NAMESPACE_END(detail)
+PYBIND11_NAMESPACE_END(PYBIND11_NAMESPACE)
 
 #include <tuple>
 #include <vector>

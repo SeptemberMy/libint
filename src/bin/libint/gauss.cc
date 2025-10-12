@@ -1,20 +1,20 @@
 /*
- *  Copyright (C) 2004-2023 Edward F. Valeev
+ *  Copyright (C) 2004-2024 Edward F. Valeev
  *
- *  This file is part of Libint.
+ *  This file is part of Libint compiler.
  *
- *  Libint is free software: you can redistribute it and/or modify
+ *  Libint compiler is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
  *
- *  Libint is distributed in the hope that it will be useful,
+ *  Libint compiler is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with Libint.  If not, see <http://www.gnu.org/licenses/>.
+ *  along with Libint compiler.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
 
@@ -68,12 +68,13 @@ std::array<LIBINT2_UINT_LEAST64, OriginDerivative<3u>::max_deriv + 1>
 namespace {
 std::string am_to_symbol(unsigned int l, bool contracted) {
   std::string result;
+  const size_t lmax_plus_1 = sizeof(LIBINT_AM2SYMBOL) - 1;
   do {
-    const unsigned int digit = l % 10u;
-    char letter = StaticDefinitions::am_letters[digit];
+    const unsigned int digit = l % lmax_plus_1;
+    char letter = LIBINT_AM2SYMBOL[digit];
     if (contracted) letter = toupper(letter);
     result.insert(result.begin(), letter);
-    l /= 10;
+    l /= lmax_plus_1;
   } while (l != 0);
 
   return result;

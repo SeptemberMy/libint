@@ -78,3 +78,10 @@ TARGET_HEADERS = $(HEADERS:%=$(top_objdir)/include/libint/%)
 
 LIBINT_HAS_EIGEN = @LIBINT_HAS_EIGEN@
 HAVE_SYSTEM_BOOST_PREPROCESSOR_VARIADICS = @HAVE_SYSTEM_BOOST_PREPROCESSOR_VARIADICS@
+
+COMPILER_LIB = $(TOPDIR)/src/bin/libint/libINT.a
+COMPUTE_LIB = -lint2
+# paths to -lint2
+vpath %.a $(TOPDIR)/lib:$(TOPDIR)/lib/.libs
+vpath %.so $(TOPDIR)/lib:$(TOPDIR)/lib/.libs
+vpath %.dylib $(TOPDIR)/lib:$(TOPDIR)/lib/.libs
