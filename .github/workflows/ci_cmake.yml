@@ -258,9 +258,9 @@ jobs:
         cat export.yaml
 
     - name: Create Conda Environment
-      uses: conda-incubator/setup-miniconda@v2
+      uses: conda-incubator/setup-miniconda@v3
       with:
-        miniforge-variant: Mambaforge
+        miniforge-variant: Miniforge3
         use-mamba: true
         python-version: "3.9"
         activate-environment: test
