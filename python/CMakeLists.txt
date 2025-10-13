@@ -6,11 +6,19 @@ endif()
 cmake_policy(SET CMP0079 NEW)
 
 if(NOT DEFINED LIBINT_VERSION)
-    # for indep build of project(libint2-python), version not available from project(Libint2)
-    set(LIBINT_VERSION "2.11.0")  # keep synched to the configure.in and export/cmake/CMakeLists.txt.export
+    # for indep bld of project(libint2-python), version (for pyproject.toml) not available from project(Libint2)
+    list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../cmake/modules)
+    include(int_computed OPTIONAL)  # cmake+cmake
+
+    if(NOT DEFINED LIBINT_VERSION)
+        set(LIBINT_VERSION "2.11.2")  # libtool+cmake
+    endif()
 endif()
 
-project(libint2-python)
+project(
+  libint2-python
+  VERSION ${LIBINT_VERSION}
+  )
 
 if (NOT TARGET Python::Module)
     find_package(Python COMPONENTS Interpreter Development REQUIRED)
@@ -48,10 +56,10 @@ if (pybind11_VERSION VERSION_GREATER_EQUAL 2.11.0)
 endif()
 
 pybind11_add_module(
-  libint2-python MODULE
-  #EXCLUDE_FROM_ALL
-  src/libint2/libint2.cc
-  src/libint2/engine.cc
+  libint2-python
+  MODULE
+    src/libint2/libint2.cc
+    src/libint2/engine.cc
   )
 
 target_compile_features(libint2-python PRIVATE "cxx_std_17")
@@ -64,9 +72,8 @@ endif()
 
 target_compile_options(libint2-python
   PRIVATE
-    # too many warnings on Windows
-    # $<$<CXX_COMPILER_ID:MSVC>:/W4>
-    $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall>
+    #$<$<BOOL:${MSVC}>:/W4>
+    $<$<NOT:$<BOOL:${MSVC}>>:-Wall>
   )
 
 #find_package(Eigen3 3.3 REQUIRED)
@@ -74,23 +81,29 @@ target_compile_options(libint2-python
 set_target_properties(
   libint2-python
   PROPERTIES
-  #PREFIX ""
-  OUTPUT_NAME libint2
+    #PREFIX ""
+    OUTPUT_NAME libint2
   )
 
-if (TARGET libint2_obj)
-  set(libint2_python_target libint2_obj)
+# future note: this whole block could likely be replaced by the below, but perhaps explicit better for now
+# * `if(TARGET Libint2::cxx)\n  target_link_libraries(libint2-python PRIVATE Libint2::cxx)\nelse()\n  find_package(Libint2 ...`
+if (TARGET Libint2::cxx)
 
-    if(MSVC)
+
+    if (MSVC)
         target_compile_definitions(libint2-python PUBLIC _USE_MATH_DEFINES)
         target_compile_options(libint2-python PUBLIC "/EHsc")
     endif()
 
-  target_link_libraries(libint2-python PRIVATE libint2_obj)
-  target_link_libraries(libint2-python PRIVATE Boost::headers)
+    target_link_libraries(
+      libint2-python
+      PRIVATE
+        Libint2::cxx
+        Boost::headers
+      )
 else()
-  find_package(Libint2 REQUIRED)
-  target_link_libraries(libint2-python PRIVATE Libint2::cxx)
+    find_package(Libint2 COMPONENTS CXX_ho REQUIRED)
+    target_link_libraries(libint2-python PRIVATE Libint2::cxx)
 endif()
 
 # if (Eigen3::Eigen)
@@ -107,12 +120,39 @@ install(TARGETS libint2-python
   RUNTIME DESTINATION libint2
 )
 
+#  <<<  Install  >>>
+
+if (LIBINT2_PREFIX_PYTHON_INSTALL)
+    # * Note that this block is *Linux-style* install to `CMAKE_INSTALL_PREFIX`.
+    # * For *Python-style* install to `Python_EXECUTABLE`'s site-packages, use
+    #   wheel target below from python/ directory.
+    #     > make libint2-python-wheel
+    #     > pip3 install dist/libint2-*.whl
+
+    execute_process(
+      COMMAND ${Python_EXECUTABLE} -c
+        "import os, sys, sysconfig as s; spdir = s.get_path('platlib'); print(spdir.replace(os.path.commonpath([sys.prefix, spdir]), '').lstrip(os.path.sep));"
+      OUTPUT_VARIABLE LIBINT2_INSTALL_PYMODDIR
+      OUTPUT_STRIP_TRAILING_WHITESPACE
+      )
+    message(STATUS "Showing option LIBINT2_INSTALL_PYMODDIR: ${LIBINT2_INSTALL_PYMODDIR} (non-user-configurable until wanted)")
+
+    install(
+      FILES $<TARGET_FILE:libint2-python>
+      COMPONENT ${L2}_Python
+      DESTINATION ${LIBINT2_INSTALL_PYMODDIR}
+      )
+endif()
+
+#  <<<  Python Tooling  >>>
+
 add_custom_target(
   libint2-python-test
   DEPENDS libint2-python
   COMMAND ${Python_EXECUTABLE} -m pytest ${CMAKE_CURRENT_SOURCE_DIR}/tests -v
   WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
   )
+add_custom_target(check-python DEPENDS libint2-python-test)
 
 add_custom_target(
   libint2-python-wheel

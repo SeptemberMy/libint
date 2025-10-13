@@ -1,13 +1,9 @@
 cmake_minimum_required(VERSION 3.19)  # string(json
 cmake_policy(SET CMP0074 NEW)
-if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.24.0")
+if (POLICY CMP0135)
     # Avoid warning about DOWNLOAD_EXTRACT_TIMESTAMP in CMake 3.24:
     cmake_policy(SET CMP0135 NEW)
-endif()
-if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.25.0")
-    # needed by DynamicVersion
-    cmake_policy(SET CMP0140 NEW)
-endif()
+endif ()
 
 ############################# Version and Metadata #############################
 
@@ -17,10 +13,13 @@ include(DynamicVersion)
 dynamic_version(
   PROJECT_PREFIX Libint2Compiler_
   GIT_ARCHIVAL_FILE ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules/.git_archival.txt
+  VERSION_FULL_MODE POST
   OUTPUT_COMMIT LibintRepository_COMMIT
   OUTPUT_VERSION LibintRepository_VERSION
   OUTPUT_DESCRIBE LibintRepository_DESCRIBE
   OUTPUT_DISTANCE LibintRepository_DISTANCE
+  OUTPUT_SHORT_HASH LibintRepository_SHORT_HASH
+  OUTPUT_VERSION_FULL LibintRepository_VERSION_FULL
   )
 
 set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build.")  # foil Ninja Debug on Windows
@@ -104,16 +103,26 @@ message(STATUS "Building using CMake ${CMAKE_VERSION} Generator ${CMAKE_GENERATO
 option_with_default(CMAKE_BUILD_TYPE "Build type (Release or Debug)" Release)
 
 ### compiler-only
+option_with_print(LIBINT_BUILD_LIBRARY_AS_SUBPROJECT
+  "[EXPERT] Build generated library as a subproject: if FALSE will configure and build separately" OFF)
 
 ### library-only
-option_with_default(LIBINT2_ENABLE_PYTHON
+option_with_print(LIBINT2_REQUIRE_CXX_API
+  "C++11 Libint API: define library targets + test (requires Eigen3, Boost is optional but strongly recommended)" ON)
+option_with_print(LIBINT2_REQUIRE_CXX_API_COMPILED
+  "Build C++11 Compiled (not just header-only) targets (requires Eigen3, Boost strongly recommended)" ON)
+option_with_print(LIBINT2_ENABLE_FORTRAN
+  "Build Fortran03+ Libint interface (requires Fortran)" OFF)
+option_with_print(LIBINT2_ENABLE_PYTHON
   "Build Python bindings (requires Python and Pybind11 and Eigen3)" OFF)
-option_with_default(LIBINT2_PREFIX_PYTHON_INSTALL
+option_with_print(LIBINT2_PREFIX_PYTHON_INSTALL
   "For LIBINT2_ENABLE_PYTHON=ON, whether to install the Python module in the Linux manner to CMAKE_INSTALL_PREFIX or to not install it. See target libint2-python-wheel for alternate installation in the Python manner to Python_EXECUTABLE's site-packages." OFF)
-
+option_with_print(BUILD_SHARED_LIBS
+  "Build Libint library as shared, not static" OFF)
+option_with_print(LIBINT2_BUILD_SHARED_AND_STATIC_LIBS
+  "Build both shared and static Libint libraries in one shot. Uses -fPIC." OFF)
 option_with_print(LIBINT2_ENABLE_MPFR
   "Use GNU MPFR library for high-precision testing (EXPERTS ONLY). Consumed at library build-time." OFF)
-## next one defined by `include(CTest)`
 
 #  <<<  Which Integrals Classes, Which Derivative Levels  >>>
 
@@ -272,11 +281,12 @@ option_with_print(LIBINT_PROFILE
   "Turn on profiling instrumentation of the library. (Generated code will require C++11!)" OFF)
 option_with_print(LIBINT2_ENABLE_MPFR
   "Use GNU MPFR library for high-precision testing (EXPERTS ONLY). Consumed at library build-time." OFF)
+option_with_default(EXPORT_COMPRESSOR
+  "Export tarball with compression gzip or bzip2" gzip)
 # next one defined by `include(CTest)`
 message(STATUS "Showing option BUILD_TESTING: ${BUILD_TESTING}")
 
 #  <<<  Path  >>>
-
 
 ######################## Process & Validate Options ###########################
 include(autocmake_safeguards)
@@ -308,6 +318,16 @@ booleanize01(SUPPORT_T1G12)
 booleanize01(LIBINT_ACCUM_INTS)
 booleanize01(LIBINT_FLOP_COUNT)
 booleanize01(LIBINT_PROFILE)
+
+if (EXPORT_COMPRESSOR STREQUAL "gzip")
+    set(EXPORT_COMPRESSOR_CMD "cfz")
+    set(EXPORT_COMPRESSOR_EXT "tgz")
+elseif (EXPORT_COMPRESSOR STREQUAL "bzip2")
+    set(EXPORT_COMPRESSOR_CMD "jcf")
+    set(EXPORT_COMPRESSOR_EXT "tbz2")
+else()
+    message(FATAL_ERROR "No valid compressor; invoke CMake with -DEXPORT_COMPRESSOR=gzip|bzip2")
+endif()
 
 
 ################################## Dependencies #################################

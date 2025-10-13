@@ -41,6 +41,9 @@
 /* Prefix for all names in API */
 #cmakedefine LIBINT_API_PREFIX "@LIBINT_API_PREFIX@"
 
+/* Max AM supported by Libint *in principle* */
+#cmakedefine LIBINT_HARD_MAX_AM @LIBINT_HARD_MAX_AM@
+
 /* Max AM (same for all derivatives; if not defined see LIBINT_MAX_AM_LIST) */
 #cmakedefine LIBINT_MAX_AM @LIBINT_MAX_AM@
 
@@ -330,15 +333,15 @@
 #if __has_cpp_attribute(maybe_unused)
 #define LIBINT_MAYBE_UNUSED [[maybe_unused]]
 #endif
-#endif  // __has_cpp_attribute
+#endif  /* __has_cpp_attribute */
 #ifndef LIBINT_MAYBE_UNUSED
 #if defined __has_attribute
 #  if __has_attribute (unused)
 #    define LIBINT_MAYBE_UNUSED __attribute__ ((unused))
 #  endif
-#endif  // __has_attribute
-#endif  // LIBINT_MAYBE_UNUSED
-#ifndef LIBINT_MAYBE_UNUSED  // fallback
+#endif  /* __has_attribute */
+#endif  /* LIBINT_MAYBE_UNUSED */
+#ifndef LIBINT_MAYBE_UNUSED  /* fallback */
 #define LIBINT_MAYBE_UNUSED
 #endif
 

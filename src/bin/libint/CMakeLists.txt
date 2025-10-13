@@ -38,16 +38,15 @@ add_library(
 target_compile_definitions(
   libint-libcompiler
   PUBLIC
-    __COMPILING_LIBINT2=1
-    # MSVC does not include <cmath> constants, unless _USE_MATH_DEFINES is defined.
     $<$<BOOL:${MSVC}>:_USE_MATH_DEFINES>
+    # MSVC does not include <cmath> constants, unless _USE_MATH_DEFINES is defined.
   )
 
 target_compile_options(
   libint-libcompiler
   PUBLIC
+    $<$<BOOL:${MSVC}>:/EHsc>
     # Set the exception handling model (allows "throw")
-    $<$<BOOL:${MSVC}>:"/EHsc">
   )
 
 target_compile_features(
@@ -85,7 +84,10 @@ add_executable(
   EXCLUDE_FROM_ALL
   build_libint.cc
   )
-target_link_libraries(build_libint libint-libcompiler)
+target_link_libraries(
+  build_libint
+  libint-libcompiler
+  )
 
 if(MSVC)
     # Increase stack size from 1 MB to 4 MB

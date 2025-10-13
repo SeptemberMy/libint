@@ -3,6 +3,21 @@
 
 Following is a brief summary of changes made in each release of Libint.
 
+- 2025-10-10: 2.11.2
+  - PR #379: amends #378
+  - PR #378: python bindings improvements: use scikit-build,
+             support python 3.12, use upstream pybind11 (3+)
+  - PR #377: set LINKER_LANGUAGE properties for fortran tests (HT @hfp)
+  - PR #375: report atomic number for missing basis set (HT @ajaypanyala)
+  - PR #374: hf++ ignores molden export failures
+  - PR #372: fixup molden export (HT @dmejiar)
+  - introduced CODATA 2022 a0<->angstrom conversion factor
+
+- 2025-05-14: 2.11.1
+  - PR #369: gcc-15 produced incorrect exponential core integrals
+  - PR #367: can build/run tests in compiler tree even if build only shared libraries
+  - PR #366: build fixup for gcc-15 and clang-21 (HT @parona-source)
+
 - 2025-04-24: 2.11.0
   - PR #364: fix eritest segfaults with atypical L combinations
   - PR #365: use Gaussian fit of Slater geminal for exceptional parameter values
