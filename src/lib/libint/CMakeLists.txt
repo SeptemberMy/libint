@@ -204,14 +204,12 @@ else()
           )
 
         if (LIBINT2_ENABLE_PYTHON)
-            find_package(Python COMPONENTS Interpreter REQUIRED)
             add_custom_target_subproject(
               libint2 check-python
-              COMMAND ${Python_EXECUTABLE} -m pytest ${PROJECT_SOURCE_DIR}/python/tests -v
+              USES_TERMINAL
+              COMMAND ${CMAKE_COMMAND} --build ${BINARY_DIR} --target libint2-python-test
               WORKING_DIRECTORY ${BINARY_DIR}/python
-              DEPENDS
-                "library-install"
-              )
+            )
         endif()
     endif()
 

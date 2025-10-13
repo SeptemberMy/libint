@@ -66,7 +66,6 @@ jobs:
         -D LIBINT2_REQUIRE_CXX_API_COMPILED=ON
         -D LIBINT2_ENABLE_FORTRAN=${{ matrix.do_fortran }}
         -D LIBINT2_ENABLE_PYTHON=ON
-        -D Python_EXECUTABLE=${{ matrix.os == 'macos-latest' && '/usr/local/Frameworks/Python.framework/Versions/3.11/bin/python3.11' || '/usr/bin/python3.8' }}
         -D EXPORT_COMPRESSOR=${{ matrix.compressor }}
 
     outputs:
@@ -94,10 +93,10 @@ jobs:
     - name: Install prerequisite MacOS packages
       if: ${{ steps.skip_check.outputs.should_skip != 'true' && matrix.os == 'macos-latest' }}
       run: |
-        brew install ninja gcc@11 gmp boost eigen bison ccache automake python@3.11 numpy scipy
+        brew install ninja gcc@11 gmp boost eigen bison ccache automake python@3.13 numpy scipy scikit-image pytest
         echo "FC=/opt/homebrew/Cellar/gcc@11/11.5.0/bin/gfortran-11" >> $GITHUB_ENV
         echo "EIGEN3_INCLUDE_DIR=/usr/local/include/eigen3" >> $GITHUB_ENV
-        pip3.11 install scipy scikit-build-core build pytest
+        pip3.13 show pytest || pip3.13 install --break-system-packages pytest
 
     - name: Install prerequisite Ubuntu packages
       if: ${{ steps.skip_check.outputs.should_skip != 'true' && matrix.os == 'ubuntu-24.04' }}
@@ -225,9 +224,9 @@ jobs:
     steps:
     # Note we're not checking out the repo. All src from Linux tarball generated above.
 
-    - uses: actions/download-artifact@v3
+    - uses: actions/download-artifact@v4.1.7
       with:
-        name: Linux-g++-10
+        name: Linux-g++
 
     - name: Write a Conda Env File
       shell: bash -l {0}
