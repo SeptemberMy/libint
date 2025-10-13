@@ -97,6 +97,19 @@ include(GNUInstallDirs)
 include(CTest)
 message(STATUS "Building using CMake ${CMAKE_VERSION} Generator ${CMAKE_GENERATOR}")
 
+#  <<<  General  >>>
+
+### compiler-only
+
+### library-only
+option_with_default(LIBINT2_ENABLE_PYTHON
+  "Build Python bindings (requires Python and Pybind11 and Eigen3)" OFF)
+option_with_default(LIBINT2_PREFIX_PYTHON_INSTALL
+  "For LIBINT2_ENABLE_PYTHON=ON, whether to install the Python module in the Linux manner to CMAKE_INSTALL_PREFIX or to not install it. See target libint2-python-wheel for alternate installation in the Python manner to Python_EXECUTABLE's site-packages." OFF)
+
+option_with_print(LIBINT2_ENABLE_MPFR
+  "Use GNU MPFR library for high-precision testing (EXPERTS ONLY). Consumed at library build-time." OFF)
+## next one defined by `include(CTest)`
 
 #  <<<  Which Integrals Classes, Which Derivative Levels  >>>
 
@@ -270,7 +283,7 @@ endif()
 
 check_include_file_cxx(stdint.h HAVE_STDINT_H)  # limits.h?
 
-if(cxx_std_11 IN_LIST CMAKE_CXX_COMPILE_FEATURES)
+if (cxx_std_11 IN_LIST CMAKE_CXX_COMPILE_FEATURES)
     set(LIBINT_HAS_CXX11 1)
 endif()
 
@@ -285,6 +298,35 @@ booleanize01(SUPPORT_T1G12)
 booleanize01(LIBINT_ACCUM_INTS)
 booleanize01(LIBINT_FLOP_COUNT)
 booleanize01(LIBINT_PROFILE)
+
+
+################################## Dependencies #################################
+
+# See notes at https://github.com/evaleev/libint/blob/master/INSTALL.md#prerequisites
+
+if (LIBINT2_ENABLE_MPFR)
+    # mpfr detected in CMakeLists.txt.export at appropriate time for library, but prechecking here
+    find_package(Multiprecision MODULE REQUIRED COMPONENTS gmpxx mpfr)
+    set(LIBINT_HAS_MPFR 1)
+else()
+    find_package(Multiprecision MODULE REQUIRED COMPONENTS gmpxx)
+endif()
+
+get_property(_loc TARGET Multiprecision::gmp PROPERTY LOCATION)
+message(VERBOSE "${Cyan}Found GMP${ColourReset}: ${_loc}")
+get_property(_loc TARGET Multiprecision::gmpxx PROPERTY LOCATION)
+message(VERBOSE "${Cyan}Found GMPXX${ColourReset}: ${_loc}")
+if (TARGET Multiprecision::mpfr)
+    get_property(_loc TARGET Multiprecision::mpfr PROPERTY LOCATION)
+    message(VERBOSE "${Cyan}Found MPFR${ColourReset}: ${_loc} (found version ${MPFR_VERSION})")
+endif()
+
+find_package(Boost 1.57 REQUIRED)
+if (TARGET Boost::headers)
+    set(LIBINT_HAS_SYSTEM_BOOST_PREPROCESSOR_VARIADICS 1)
+endif()
+
+# deferring find_package(Eigen3) to library (CMakeLists.txt.export)
 
 
 ################################## Main Project #################################

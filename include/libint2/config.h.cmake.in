@@ -234,6 +234,13 @@
 /* C++ compiler allows template with default params as template template parameter (check is NYI) */
 #undef CXX_ALLOWS_DEFPARAMTEMPLATE_AS_TEMPTEMPPARAM
 
+/* define if Eigen library is available. (not implemented for CMake) */
+/* #cmakedefine LIBINT_HAS_EIGEN @LIBINT_HAS_EIGEN@ */
+#undef LIBINT_HAS_EIGEN
+
+/* define if system-wide Boost.Preprocessor is available */
+#cmakedefine LIBINT_HAS_SYSTEM_BOOST_PREPROCESSOR_VARIADICS @LIBINT_HAS_SYSTEM_BOOST_PREPROCESSOR_VARIADICS@
+
 /*
   Known orderings of cartesian Gaussians
 */
@@ -261,6 +268,9 @@
 
 /* have stdint.h ? */
 #cmakedefine HAVE_STDINT_H @HAVE_STDINT_H@
+
+/* have MPFR library ? */
+#cmakedefine LIBINT_HAS_MPFR @LIBINT_HAS_MPFR@
 
 /* have posix_memalign ? */
 #cmakedefine HAVE_POSIX_MEMALIGN @HAVE_POSIX_MEMALIGN@
