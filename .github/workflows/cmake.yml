@@ -1,4 +1,4 @@
-name: BuildCM
+name: Build
 
 on:
   push:
