@@ -1,20 +1,20 @@
 /*
- *  Copyright (C) 2004-2021 Edward F. Valeev
+ *  Copyright (C) 2004-2024 Edward F. Valeev
  *
- *  This file is part of Libint.
+ *  This file is part of Libint compiler.
  *
- *  Libint is free software: you can redistribute it and/or modify
+ *  Libint compiler is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
  *
- *  Libint is distributed in the hope that it will be useful,
+ *  Libint compiler is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with Libint.  If not, see <http://www.gnu.org/licenses/>.
+ *  along with Libint compiler.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
 
@@ -167,6 +167,18 @@ void RunTest(Callback test, const std::string& descr, std::ostream& os) {
 }
 
 void test0() {
+  // test CGShell labels
+  if (CGShell(0).label() != "s")
+    throw ProgrammingError("CGShell::label() failed for l=0");
+  if (CGShell(20).label() != "z")
+    throw ProgrammingError("CGShell::label() failed for l=20");
+  if (CGShell(21).label() != "ps")
+    throw ProgrammingError("CGShell::label() failed for l=21");
+  if (CGShell(22).label() != "pp")
+    throw ProgrammingError("CGShell::label() failed for l=22");
+  if (CGShell(42).label() != "ds")
+    throw ProgrammingError("CGShell::label() failed for l=42");
+
   std::shared_ptr<TwoPRep_11_11_sq> pppp_quartet =
       TwoPRep_11_11_sq::Instance(sh_p, sh_p, sh_p, sh_p, 0u);
   std::shared_ptr<DGVertex> pppp_ptr =

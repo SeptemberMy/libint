@@ -111,6 +111,7 @@ file(
     PATTERN "*.cc"
     PATTERN "*.py"
     PATTERN "*.py.in"
+    PATTERN "*.toml"
     PATTERN "CMakeLists.txt"
   )
 

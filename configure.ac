@@ -1,4 +1,4 @@
-define([libint_mmm_version],[2.8.1])
+define([libint_mmm_version],[2.11.2])
 define([libint_buildid],[])
 define([libint_so_version],[2:3:0])
 
@@ -226,7 +226,7 @@ case $enableval in
   ;;
 esac
 ])
-if test X$DISABLE_ONEBODY_PROPERTY_DERIVS != 0; then
+if test $DISABLE_ONEBODY_PROPERTY_DERIVS != 0; then
   AC_DEFINE(DISABLE_ONEBODY_PROPERTY_DERIVS)
 fi
 
@@ -341,6 +341,7 @@ esac
 )
 
 LIBINT_HARD_MAX_AM=12
+AC_DEFINE_UNQUOTED(LIBINT_HARD_MAX_AM,$LIBINT_HARD_MAX_AM)
 LIBINT_MAX_AM=4
 AC_ARG_WITH(max-am,
 AS_HELP_STRING([--with-max-am=N],[Support Gaussians of angular momentum up to N. Can specify values for each derivative levels as a list N0,N1,N2...]),
@@ -528,7 +529,7 @@ AS_HELP_STRING([--with-eri3-max-am=N],[Support 3-center ERIs for Gaussians of an
      else
       ERI3_MAX_AM=$withval
      fi
-     if test $ERI3_MAX_AM -ge $LIBINT_HARD_MAX_AM; then
+     if test $ERI3_MAX_AM -gt $LIBINT_HARD_MAX_AM; then
       AC_MSG_ERROR([Value for --with-eri3-max-am too high ($withval). Are you sure you know what you are doing?])
      fi
      AC_SUBST(ERI3_MAX_AM)
@@ -599,7 +600,7 @@ AS_HELP_STRING([--with-eri2-max-am=N],[Support 2-center ERIs for Gaussians of an
      else
       ERI2_MAX_AM=$withval
      fi
-     if test $ERI2_MAX_AM -ge $LIBINT_HARD_MAX_AM; then
+     if test $ERI2_MAX_AM -gt $LIBINT_HARD_MAX_AM; then
       AC_MSG_ERROR([Value for --with-eri2-max-am too high ($withval). Are you sure you know what you are doing?])
      fi
      AC_SUBST(ERI2_MAX_AM)
@@ -1110,7 +1111,7 @@ CXXFLAGS="$initial_CXXFLAGS"
 
 AC_CHECK_PROG(AR,ar,ar)
 AC_CHECK_PROG(PERL,perl,perl)
-AC_CHECK_PROGS(TAR,gnutar tar,tar)
+AC_CHECK_PROGS(TAR,gnutar gtar tar,tar)
 AC_CHECK_PROGS(PYTHON,python python3 python2 python2.7,python)
 AC_PATH_PROG(DOXYGEN,doxygen,,$PATH:/usr/local/bin:/opt/local/bin)
 AC_PATH_PROG(PDFLATEX,pdflatex,,$PATH:/usr/local/bin:/opt/local/bin)

@@ -1,20 +1,20 @@
 /*
- *  Copyright (C) 2004-2023 Edward F. Valeev
+ *  Copyright (C) 2004-2024 Edward F. Valeev
  *
- *  This file is part of Libint.
+ *  This file is part of Libint library.
  *
- *  Libint is free software: you can redistribute it and/or modify
+ *  Libint library is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Lesser General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
  *
- *  Libint is distributed in the hope that it will be useful,
+ *  Libint library is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
  *
  *  You should have received a copy of the GNU Lesser General Public License
- *  along with Libint.  If not, see <http://www.gnu.org/licenses/>.
+ *  along with Libint library.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
 
@@ -23,6 +23,7 @@
 
 #if defined(__cplusplus)
 
+#include <libint2/util/optional.h>
 #include <libint2/util/vector.h>
 
 #include <algorithm>
@@ -31,6 +32,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <limits>
+#include <map>
 #include <memory>
 #include <mutex>
 #include <stdexcept>
@@ -272,10 +274,11 @@ class FmEval_Chebyshev7 {
 
  public:
   /// \param m_max maximum value of the Boys function index; set to -1 to skip
-  /// initialization \param precision the desired relative precision \throw
-  /// std::invalid_argument if \c m_max is greater than \c cheb_table_mmax (see
-  /// boys_cheb7.h) \throw std::invalid_argument if \c precision is smaller than
-  /// std::numeric_limits<double>::epsilon()
+  /// initialization \param precision the desired relative precision
+  /// \throw std::invalid_argument if \c m_max is greater than
+  ///   \c cheb_table_mmax (see boys_cheb7.h)
+  /// \throw std::invalid_argument if \c precision is smaller than
+  ///   `std::numeric_limits<double>::epsilon()`
   FmEval_Chebyshev7(int m_max,
                     double precision = std::numeric_limits<double>::epsilon())
       : mmax(m_max), numbers_(14) {
@@ -889,12 +892,16 @@ constexpr double pow10(long exp) {
 //////////////////////////////////////////////////////////
 
 /**
- * Evaluates core integral for Gaussian integrals over the Yukawa potential \f$
- * \exp(- \zeta r) / r \f$ and the exponential interaction \f$ \exp(- \zeta r)
- * \f$
+ * Evaluates core integral for Gaussian integrals over the Yukawa potential
+ * \f$ \exp(- \zeta r) / r \f$ and the exponential interaction
+ * \f$ \exp(- \zeta r) \f$
  * @tparam Real real type
  * @warning only @p Real = double is supported
  * @warning guarantees absolute precision of only about 1e-14
+ * @warning for vast majority of practical uses the integral is computed
+ * by interpolation or closed-form evaluation. But rarely the
+ * the "analytic" route will cause overflow, so will represent kernel
+ * as a linear combination of Gaussians to compute without overflow.
  */
 template <typename Real = double>
 struct TennoGmEval {
@@ -912,18 +919,76 @@ struct TennoGmEval {
       cheb_table_umaxlog10);  //!< max value of U for which to interpolate
   static constexpr Real Umin = detail::pow10(
       cheb_table_uminlog10);  //!< min value of U for which to interpolate
+  static constexpr Real one_over_Umin =
+      1. / Umin;  //!< min value of U for which to interpolate
   static constexpr std::size_t ORDERp1 = interpolation_order + 1;
   static constexpr Real maxabsprecision =
       1.4e-14;  //!< guaranteed abs precision of the interpolation table for m>0
+                // map of zeta to existing gaussian fit to slater to avoid
+                // recomputing
+
+  // to avoid recomputing Gaussian fits of the exponential cache
+  // them for every value of zeta
+  using gaussian_fit_t = std::vector<std::pair<double, double>>;
+  using gaussian_fits_t = std::map<double, gaussian_fit_t>;  // zeta -> fit
+  // TODO replace by atomic shared_ptr to avoid leaking memory at the end
+  using gaussian_fits_aptr_t = std::atomic<gaussian_fits_t*>;
+  static gaussian_fits_aptr_t& gaussian_fits_aptr_accessor() {
+    static gaussian_fits_aptr_t gaussian_fits_aptr_;
+    return gaussian_fits_aptr_;
+  }
+  static gaussian_fit_t& get_gaussian_fit(double zeta) {
+    while (gaussian_fits_aptr_accessor().load() == nullptr ||
+           gaussian_fits_aptr_accessor().load()->count(zeta) == 0) {
+      // remember ptr to the cache we will be adding new fit to
+      auto* gaussian_fits_ptr = gaussian_fits_aptr_accessor().load();
+
+      // use existing cache, or create a new one
+      auto new_gaussian_fits_ptr = new gaussian_fits_t(
+          gaussian_fits_ptr == nullptr ? gaussian_fits_t()
+                                       : *gaussian_fits_ptr);
+      // constexpr double low_end_range = 1e-5;
+      // constexpr double high_end_range = 5;
+      // constexpr double eps = 1e-12;
+      std::vector<std::pair<double, double>> geminal =
+          fit_slater(zeta /* , low_end_range, high_end_range, eps */);
+      gaussian_fits_t::iterator it;
+      bool inserted;
+      std::tie(it, inserted) = new_gaussian_fits_ptr->emplace(zeta, geminal);
+
+      // inserted may be false if someone inserted between count query and
+      // grabbing gaussian_fits_ptr ... if inserted new fit try to replace the
+      // value in gaussian_fits_aptr_
+      if (inserted) {
+        auto* expected_gaussian_fits_ptr = gaussian_fits_ptr;
+        if (gaussian_fits_aptr_accessor().compare_exchange_strong(
+                expected_gaussian_fits_ptr, new_gaussian_fits_ptr)) {
+          // can't delete since someone might be using it ... need atomic
+          // shared_ptr
+          // delete gaussian_fits_ptr;
+          break;
+        } else {
+          delete new_gaussian_fits_ptr;
+        }
+      }
+    }
+    return gaussian_fits_aptr_accessor().load()->at(zeta);
+  }
+  mutable std::unique_ptr<GaussianGmEval<Real, -1>> yukawa_gaussian_fit_eval_;
+  mutable std::unique_ptr<GaussianGmEval<Real, 0>> slater_gaussian_fit_eval_;
 
  public:
   /// \param m_max maximum value of the Gm function index
   /// \param precision the desired *absolute* precision (relative precision for
   /// most intervals will be below epsilon, but for large T/U values and high m
-  /// relative precision is low \throw std::invalid_argument if \c m_max is
-  /// greater than \c cheb_table_mmax (see tenno_cheb.h) \throw
-  /// std::invalid_argument if \c precision is smaller than \c maxabsprecision
-  TennoGmEval(unsigned int mmax, Real precision = -1)
+  /// relative precision is low); since evaluation is done primarily
+  /// by interpolation, precision is not controlled dynamically, thus this
+  /// should not be used.
+  /// \throw std::invalid_argument if \c m_max is greater than
+  ///   \c cheb_table_mmax (see tenno_cheb.h)
+  /// \throw std::invalid_argument if \c precision is smaller
+  ///   than \c maxabsprecision
+  TennoGmEval(unsigned int mmax, Real precision = maxabsprecision)
       : mmax_(mmax), precision_(precision), numbers_() {
 #if defined(__x86_64__) || defined(_M_X64) || defined(__i386) || \
     defined(_M_IX86)
@@ -941,12 +1006,10 @@ struct TennoGmEval {
 #endif
 #endif
 
-    //        if (precision_ < maxabsprecision)
-    //          throw std::invalid_argument(
-    //              std::string(
-    //                  "TennoGmEval does not support precision smaller than ")
-    //                  +
-    //              std::to_string(maxabsprecision));
+    if (precision_ < maxabsprecision)
+      throw std::invalid_argument(
+          std::string("TennoGmEval does not support precision smaller than ") +
+          std::to_string(maxabsprecision));
 
     if (mmax > cheb_table_mmax)
       throw std::invalid_argument(
@@ -992,16 +1055,27 @@ struct TennoGmEval {
   /// @param[in] T \f$ T \f$
   /// @param[in] mmax \f$ m_\mathrm{max} \f$
   /// @param[in] zeta \f$ \zeta \f$
+  /// @throw std::invalid_argument if \f$ \zeta^2/(4 \rho) \f$ exceeds \c Umax
   void eval_yukawa(Real* Gm, Real one_over_rho, Real T, size_t mmax,
                    Real zeta) const {
     assert(mmax <= mmax_);
     assert(T >= 0);
     const auto U = 0.25 * zeta * zeta * one_over_rho;
     assert(U >= 0);
+    bool success = false;  // did interpolation or recursion work?
     if (T > Tmax || U < Umin) {
-      eval_urr<false>(Gm, T, U, /* zeta_over_two_rho = */ 0, mmax);
+      success = eval_urr<false>(Gm, T, U, /* zeta_over_two_rho = */ 0, mmax);
     } else {
-      interpolate_Gm<false>(Gm, T, U, /* zeta_over_two_rho = */ 0, mmax);
+      success =
+          interpolate_Gm<false>(Gm, T, U, /* zeta_over_two_rho = */ 0, mmax);
+    }
+    if (!success) {  // fallback is to use the Gaussian fit
+      auto& gaussian_fit = get_gaussian_fit(zeta);
+      if (!yukawa_gaussian_fit_eval_)
+        yukawa_gaussian_fit_eval_ = std::unique_ptr<GaussianGmEval<Real, -1>>(
+            new GaussianGmEval<Real, -1>(mmax_, precision_));
+      yukawa_gaussian_fit_eval_->eval(Gm, 1.0 / one_over_rho, T, mmax,
+                                      gaussian_fit);
     }
   }
   /// @param[in] Gm pointer to array of @c mmax+1 @c Real elements, on
@@ -1015,6 +1089,7 @@ struct TennoGmEval {
   /// @param[in] T \f$ T \f$
   /// @param[in] mmax \f$ m_\mathrm{max} \f$
   /// @param[in] zeta \f$ \zeta \f$
+  /// @throw std::invalid_argument if \f$ \zeta^2/(4 \rho) \f$ exceeds \c Umax
   void eval_slater(Real* Gm, Real one_over_rho, Real T, size_t mmax,
                    Real zeta) const {
     assert(mmax <= mmax_);
@@ -1022,11 +1097,85 @@ struct TennoGmEval {
     const auto U = 0.25 * zeta * zeta * one_over_rho;
     assert(U > 0);  // integral factorizes into 2 overlaps for U = 0
     const auto zeta_over_two_rho = 0.5 * zeta * one_over_rho;
+    bool success = false;  // did interpolation or recursion work?
     if (T > Tmax) {
-      eval_urr<true>(Gm, T, U, zeta_over_two_rho, mmax);
+      success = eval_urr<true>(Gm, T, U, zeta_over_two_rho, mmax);
     } else {
-      interpolate_Gm<true>(Gm, T, U, zeta_over_two_rho, mmax);
+      success = interpolate_Gm<true>(Gm, T, U, zeta_over_two_rho, mmax);
     }
+    if (!success) {  // fallback is to use the Gaussian fit
+      auto& gaussian_fit = get_gaussian_fit(zeta);
+      if (!slater_gaussian_fit_eval_)
+        slater_gaussian_fit_eval_ = std::unique_ptr<GaussianGmEval<Real, 0>>(
+            new GaussianGmEval<Real, 0>(mmax_, precision_));
+      slater_gaussian_fit_eval_->eval(Gm, 1.0 / one_over_rho, T, mmax,
+                                      gaussian_fit);
+    }
+  }
+
+  /// Fits a slater with an undetermined number of gaussians, borrowed from
+  /// https://github.com/m-a-d-n-e-s-s/madness/blob/master/src/madness/mra/gfit.h#L140
+  /// @param[in] zeta exponent of Slater
+  /// @param[in] lo smallest lengthscale to be represented
+  /// @param[in] hi largest lengthscale to be represented
+  /// @param[in] eps precision threshold
+  /// @return vector of Gaussian geminals representing a Slater function with
+  // the given zeta as a vector of std::pair(exponent, coefficient)
+  static std::vector<std::pair<double, double>> fit_slater(double zeta,
+                                                           double lo = 1e-5,
+                                                           double hi = 5,
+                                                           double eps = 1e-12) {
+    double ulim;
+    if (eps >= 1e-2)
+      ulim = 5;
+    else if (eps >= 1e-4)
+      ulim = 10;
+    else if (eps >= 1e-6)
+      ulim = 14;
+    else if (eps >= 1e-8)
+      ulim = 18;
+    else if (eps >= 1e-10)
+      ulim = 22;
+    else if (eps >= 1e-12)
+      ulim = 26;
+    else
+      ulim = 30;
+
+    // integration limits for quadrature
+    double slo = 0.5 * log(eps) - 1.0;
+    double shi = log(ulim / (lo * lo)) * 0.5;
+    // resolution for quadrature
+    double res = 1.0 / (0.2 - 0.5 * log10(eps));
+
+    // Truncate the number of binary digits in h's mantissa
+    // so that rounding does not occur when performing
+    // manipulations to determine the quadrature points and
+    // to limit the number of distinct values in case of
+    // multiple precisions being used at the same time.
+    res = floor(64. * res) / 64.;
+    // round slo/hi down/up to an integral multiple of quadrature points
+    slo = floor(slo / res) * res;
+    shi = ceil(shi / res) * res;
+
+    long n_pts = long((shi - slo) / res + 0.5);
+
+    std::vector<double> coeffs(n_pts), expnts(n_pts);
+
+    for (size_t i = 0; i != n_pts; ++i) {  // fill coeff and exponents vectors
+      const double s = slo + res * (n_pts - i);
+      coeffs[i] = res * exp(-zeta * zeta * exp(2. * s) + s);
+      const long double twoOvrSqrtPi = 1.12837916709551257389615890312154517;
+      coeffs[i] *= zeta * twoOvrSqrtPi;
+      expnts[i] = 0.25 * exp(-2. * s);
+    }
+
+    assert(coeffs.size() == expnts.size());
+    std::vector<std::pair<double, double>> result;
+    for (size_t i = 0; i != coeffs.size(); ++i) {
+      if (std::abs(coeffs[i]) > std::numeric_limits<double>::epsilon())
+        result.push_back(std::pair<double, double>(expnts[i], coeffs[i]));
+    }
+    return result;
   }
 
  private:
@@ -1034,9 +1183,13 @@ struct TennoGmEval {
   /// @tparam compute_Gm1, if true, compute G_0 and G_{-1}, otherwise G_0 only
   /// @param[in] T the value of \f$ T \f$
   /// @param[in] U the value of \f$ U \f$
-  /// @return if @c compute_Gm1==true return {G_0,G_{-1}}, otherwise {G_0,0}
+  /// @return if {T,U} can be handled without overflow return {G_0,G_{-1}} if
+  //          @c compute_Gm1==true , else {G_0,0};
+  //          if {T,U} cannot be handled without overflow
+  //          return nullopt
   template <bool compute_Gm1>
-  static inline std::tuple<Real, Real> eval_G0_and_maybe_Gm1(Real T, Real U) {
+  static inline optional<std::tuple<Real, Real>> eval_G0_and_maybe_Gm1(Real T,
+                                                                       Real U) {
     assert(T >= 0);
     assert(U >= 0);
     const Real sqrtPi(1.7724538509055160272981674833411451827975494561224);
@@ -1063,20 +1216,55 @@ struct TennoGmEval {
       const Real sqrtPi_over_4 = sqrtPi * 0.25;
       const Real pfac = sqrtPi_over_4;
       const Real erfc_k = exp(kappa * kappa - T) * erfc(kappa);
+      // TODO when lambda * lambda - T exceeds 709 exp overflows, so need to
+      // handle this more carefully
+      if (lambda * lambda - T > 709) {
+        libint2::verbose_stream()
+            << "TennoGmEval::eval_G0_and_maybe_Gm1(): for large T and/or U "
+            << "current implementation overflows, will represent "
+            << "Slater function as a linear combination of Gaussians\n";
+        return libint2::nullopt;
+      }
       const Real erfc_l = exp(lambda * lambda - T) * erfc(lambda);
 
       G_m1 = compute_Gm1 ? pfac * (erfc_k + erfc_l) * oo_sqrt_U : 0.0;
       G_0 = pfac * (erfc_k - erfc_l) * oo_sqrt_T;
-    } else {  // T = 0, U > 0
-      const Real exp_U = exp(U);
-      const Real sqrt_U = sqrt(U);
-      if (compute_Gm1) {
-        const Real sqrtPi_over_2 = sqrtPi * 0.5;
-        const Real oo_sqrt_U = compute_Gm1 ? (1 / sqrt_U) : 0;
+    } else {           // T = 0, U > 0
+      if (U <= 709) {  // exp(<=709) is finite
+        const Real exp_U = exp(U);
+        const Real sqrt_U = sqrt(U);
+        if (compute_Gm1) {
+          const Real sqrtPi_over_2 = sqrtPi * 0.5;
+          const Real oo_sqrt_U = compute_Gm1 ? (1 / sqrt_U) : 0;
 
-        G_m1 = exp_U * sqrtPi_over_2 * erfc(sqrt_U) * oo_sqrt_U;
+          G_m1 = exp_U * sqrtPi_over_2 * erfc(sqrt_U) * oo_sqrt_U;
+        }
+        G_0 = 1 - exp_U * sqrtPi * erfc(sqrt_U) * sqrt_U;
+      } else {  // exp(>=710) is "infinity", handle larger values as a series
+        const Real oo_U = Real{1} / U;
+        const Real x = oo_U;
+        const Real x2 = x * x;
+        const Real x3 = x2 * x;
+        const Real x4 = x2 * x2;
+        const Real x5 = x3 * x2;
+        const Real x6 = x3 * x3;
+        if (compute_Gm1) {
+          // 6th-order is sufficient
+          // in Wolfram: Series[Exp[U]*(Sqrt[Pi]/2)*Erfc[Sqrt[U]]/Sqrt[U], {U,
+          // Infinity, 6}]
+          const Real cm1[] = {1. / 2,    -1. / 4,   3. / 8,
+                              -15. / 16, 105. / 32, -945. / 64};
+          G_m1 = cm1[0] * x + cm1[1] * x2 + cm1[2] * x3 + cm1[3] * x4 +
+                 cm1[4] * x5 + cm1[5] * x6;
+        }
+        // 6th-order is sufficient
+        // in Wolfram: Series[1 - Exp[U]*Sqrt[Pi]*Erfc[Sqrt[U]]*Sqrt[U], {U,
+        // Infinity, 6}]
+        const Real c0[] = {1. / 2,     -3. / 4,   15. / 8,
+                           -105. / 16, 945. / 32, -10395. / 64};
+        G_0 = c0[0] * x + c0[1] * x2 + c0[2] * x3 + c0[3] * x4 + c0[4] * x5 +
+              c0[5] * x6;
       }
-      G_0 = 1 - exp_U * sqrtPi * erfc(sqrt_U) * sqrt_U;
     }
 
     return std::make_tuple(G_0, G_m1);
@@ -1098,10 +1286,12 @@ struct TennoGmEval {
   /// only used if @c Exp==true
   /// @param[in] mmax the maximum value of \f$ m \f$
   template <bool Exp>
-  static void eval_urr(Real* Gm_vec, Real T, Real U, Real zeta_over_two_rho,
+  static bool eval_urr(Real* Gm_vec, Real T, Real U, Real zeta_over_two_rho,
                        size_t mmax) {
-    assert(T > 0);
+    assert(T >= 0);
     assert(U > 0);
+
+    if (T == 0) return false;
 
     const Real sqrt_U = sqrt(U);
     const Real sqrt_T = sqrt(T);
@@ -1153,7 +1343,7 @@ struct TennoGmEval {
       }
     }
 
-    return;
+    return true;
   }
 
   /// compute core integrals by Chebyshev interpolation
@@ -1167,11 +1357,26 @@ struct TennoGmEval {
   /// @param[in] zeta_over_two_rho the value of \f$ \frac{\zeta}{2 \rho} \f$,
   /// only used if @c Exp==true
   /// @param[in] mmax the maximum value of \f$ m \f$
+  /// @throw std::invalid_argument if \p U exceeds \c Umax
+  /// @return true if {T,U} can be handled without overflow; false return
+  ///         indicates that Gaussian fit of the kernel should be used to
+  ///         compute Gm
   template <bool Exp>
-  void interpolate_Gm(Real* Gm_vec, Real T, Real U, Real zeta_over_two_rho,
+  bool interpolate_Gm(Real* Gm_vec, Real T, Real U, Real zeta_over_two_rho,
                       long mmax) const {
     assert(T >= 0);
-    assert(U >= Umin && U <= Umax);
+    if (U > Umax) {
+      libint2::verbose_stream()
+          << "TennoGmEval::eval_{yukawa,slater}() : arguments out of range, "
+          << "zeta*zeta*one_over_rho/4=" << std::to_string(U)
+          << " cannot exceed " << std::to_string(Umax)
+          << " will represent Slater function as a linear combination of"
+          << " Gaussian functions " << std::endl;
+      return false;
+    }
+    if (U < Umin || U > Umax) {
+      return false;
+    }
 
     // maps x in [0,2] to [-1/2,1/2] in a linear fashion
     auto linear_map_02 = [](Real x) {
@@ -1188,15 +1393,21 @@ struct TennoGmEval {
     };
 
     // which interval does this T fall into?
-    const int Tint = T < 2 ? 0 : int(std::floor(std::log2(T)));
-    assert(Tint >= 0 && Tint < 10);
+    const int Tint =
+        T < 2 ? 0
+              : int(std::floor(std::log2(T) *
+                               (1. - std::numeric_limits<double>::epsilon())));
+    assert(Tint >= 0 && Tint < cheb_table_tmaxlog2 - cheb_table_tminlog2 + 1);
     // precomputed 1 / 2^K
     constexpr Real one_over_2K[] = {1,          0.5,       0.25,     0.125,
                                     0.0625,     0.03125,   0.015625, 0.0078125,
                                     0.00390625, .001953125};
     // which interval does this U fall into?
-    const int Uint = int(std::floor(std::log10(U / Umin)));
-    assert(Uint >= 0 && Uint < 10);
+    const auto log10_U_over_Umin =
+        std::log10(U * one_over_Umin) *
+        (1. - std::numeric_limits<double>::epsilon());
+    const int Uint = int(std::floor(log10_U_over_Umin));
+    assert(Uint >= 0 && Uint < cheb_table_umaxlog10 - cheb_table_uminlog10);
     // precomputed 1 / 10^(cheb_table_uminlog10 + K)
     constexpr Real one_over_10K[] = {
         1. / detail::pow10(cheb_table_uminlog10),
@@ -1216,7 +1427,8 @@ struct TennoGmEval {
     const Real u =
         log10_map(U, one_over_10K[Uint]);  // this ranges from -0.5 to 0.5
 
-    const int interval = Tint * 10 + Uint;
+    const int interval =
+        Tint * (cheb_table_umaxlog10 - cheb_table_uminlog10) + Uint;
 
 #if defined(__AVX__)
     assert(ORDERp1 == 16);
@@ -1262,7 +1474,11 @@ struct TennoGmEval {
       // precision of interpolation for m=-1,0 can be insufficient, just
       // evaluate explicitly
       Real G0;
-      std::tie(Exp ? G0 : Gm_vec[0], Gmm1) = eval_G0_and_maybe_Gm1<Exp>(T, U);
+      const auto eval_G0_Gm1_result = eval_G0_and_maybe_Gm1<Exp>(T, U);
+      if (!eval_G0_Gm1_result.has_value()) {
+        return false;
+      }
+      std::tie(Exp ? G0 : Gm_vec[0], Gmm1) = eval_G0_Gm1_result.value();
       if
 #if __cplusplus >= 201703L
           constexpr
@@ -1413,7 +1629,7 @@ struct TennoGmEval {
       auto tall = horizontal_add(t0123, t4567, t89ab, tcdef);
       const auto Gm = horizontal_add(tall);
 #else   // AVX
-        // no AVX, use explicit loops (probably slow)
+      // no AVX, use explicit loops (probably slow)
       double uvec[16];
       double tvec[16];
       uvec[0] = 1;
@@ -1444,7 +1660,7 @@ struct TennoGmEval {
       }
     }
 
-    return;
+    return true;
   }
 
  private:
@@ -1462,7 +1678,8 @@ struct TennoGmEval {
     if (status != 0) {
       if (status == EINVAL)
         throw std::logic_error(
-            "TennoGmEval::init() : posix_memalign failed, alignment must be a "
+            "TennoGmEval::init() : posix_memalign failed, alignment must be "
+            "a "
             "power of 2 at least as large as sizeof(void *)");
       if (status == ENOMEM) throw std::bad_alloc();
       abort();  // should be unreachable
@@ -1489,7 +1706,7 @@ constexpr double
                                   (TennoGmEval<Real>::interpolation_order + 1) *
                                   (TennoGmEval<Real>::interpolation_order + 1)];
 #else
-// clang needs an explicit specifalization declaration to avoid warning
+// clang needs an explicit specialization declaration to avoid warning
 #ifdef __clang__
 template <typename Real>
 double
@@ -1516,9 +1733,8 @@ struct CoreEvalScratch {
 template <typename Real>
 struct CoreEvalScratch<GaussianGmEval<Real, -1>> {
   std::vector<Real> Fm_;
-  std::vector<Real> g_i;
-  std::vector<Real> r_i;
-  std::vector<Real> oorhog_i;
+  std::vector<Real> g_i;  // (gamma / (rho  + gamma))^i
+  std::vector<Real> r_i;  // (rho / (rho  + gamma))^i
   CoreEvalScratch(const CoreEvalScratch&) = default;
   CoreEvalScratch(CoreEvalScratch&&) = default;
   explicit CoreEvalScratch(int mmax) { init(mmax); }
@@ -1528,7 +1744,6 @@ struct CoreEvalScratch<GaussianGmEval<Real, -1>> {
     Fm_.resize(mmax + 1);
     g_i.resize(mmax + 1);
     r_i.resize(mmax + 1);
-    oorhog_i.resize(mmax + 1);
     g_i[0] = 1.0;
     r_i[0] = 1.0;
   }
@@ -1546,11 +1761,11 @@ struct CoreEvalScratch<GaussianGmEval<Real, -1>> {
  * Gaussian geminal \f$ g(r_{12}) = r_{12}^k \sum_i c_i \exp(- a_i r_{12}^2),
  * \quad k = -1, 0, 2 \f$ . The integrals are needed in R12/F12 methods with
  * STG-nG correlation factors. Specifically, for a correlation factor \f$
- * f(r_{12}) = \sum_i c_i \exp(- a_i r_{12}^2) \f$ integrals with the following
- * kernels are needed: <ul> <li> \f$ f(r_{12}) \f$  (k=0) </li> <li> \f$
- * f(r_{12}) / r_{12} \f$  (k=-1) </li> <li> \f$ f(r_{12})^2 \f$ (k=0, @sa
- * GaussianGmEval::eval ) </li> <li> \f$ [f(r_{12}), [\hat{T}_1, f(r_{12})]] \f$
- * (k=2, @sa GaussianGmEval::eval ) </li>
+ * f(r_{12}) = \sum_i c_i \exp(- a_i r_{12}^2) \f$ integrals with the
+ * following kernels are needed: <ul> <li> \f$ f(r_{12}) \f$  (k=0) </li> <li>
+ * \f$ f(r_{12}) / r_{12} \f$  (k=-1) </li> <li> \f$ f(r_{12})^2 \f$ (k=0, @sa
+ * GaussianGmEval::eval ) </li> <li> \f$ [f(r_{12}), [\hat{T}_1, f(r_{12})]]
+ * \f$ (k=2, @sa GaussianGmEval::eval ) </li>
  * </ul>
  *
  * N.B. ``Asymmetric'' kernels, \f$ f(r_{12}) g(r_{12}) \f$ and
@@ -1614,7 +1829,8 @@ struct GaussianGmEval
   /// @return the maximum value of m for which the \f$ G_m(\rho, T) \f$ can be
   /// computed with this object
   int max_m() const { return mmax_; }
-  /// @return the precision with which this object can compute the Boys function
+  /// @return the precision with which this object can compute the Boys
+  /// function
   Real precision() const { return precision_; }
 
   /** computes \f$ G_m(\rho, T) \f$ using downward recursion.
@@ -1625,14 +1841,15 @@ struct GaussianGmEval
    * must be at least mmax+1 elements long
    * @param[in] rho
    * @param[in] T
-   * @param[in] mmax mmax the maximum value of m for which Boys function will be
-   * computed; it must be <= the value returned by max_m() (this is not checked)
+   * @param[in] mmax mmax the maximum value of m for which Boys function will
+   * be computed; it must be <= the value returned by max_m() (this is not
+   * checked)
    * @param[in] geminal the Gaussian geminal for which the core integral \f$
    * Gm(\rho, T) \f$ is computed; a contracted Gaussian geminal is represented
    * as a vector of pairs, each of which specifies the exponent (first) and
    * contraction coefficient (second) of the primitive Gaussian geminal
-   * @param[in] scr if \c k ==-1 and need this to be reentrant, must provide ptr
-   * to the per-thread \c
+   * @param[in] scr if \c k ==-1 and need this to be reentrant, must provide
+   * ptr to the per-thread \c
    * libint2::detail::CoreEvalScratch<GaussianGmEval<Real,-1>> object; no need
    * to specify \c scr otherwise
    */
@@ -1644,15 +1861,6 @@ struct GaussianGmEval
 
     const auto sqrt_rho = sqrt(rho);
     const auto oo_sqrt_rho = 1 / sqrt_rho;
-    if (k == -1) {
-      void* _scr = (scr == 0) ? this : scr;
-      auto& scratch = *(
-          reinterpret_cast<detail::CoreEvalScratch<GaussianGmEval<Real, -1>>*>(
-              _scr));
-      for (int i = 1; i <= mmax; i++) {
-        scratch.r_i[i] = scratch.r_i[i - 1] * rho;
-      }
-    }
 
     typedef
         typename std::vector<std::pair<AnyReal, AnyReal>>::const_iterator citer;
@@ -1689,10 +1897,9 @@ struct GaussianGmEval
         constexpr Real const_2_SQRTPI(
             1.12837916709551257389615890312154517); /* 2/sqrt(pi)     */
         const auto pfac = const_2_SQRTPI * sqrt_rhog * SS_K0G12_SS;
-        scratch.oorhog_i[0] = pfac;
         for (int i = 1; i <= mmax; i++) {
-          scratch.g_i[i] = scratch.g_i[i - 1] * gamma;
-          scratch.oorhog_i[i] = scratch.oorhog_i[i - 1] * oorhog;
+          scratch.r_i[i] = scratch.r_i[i - 1] * rorg;
+          scratch.g_i[i] = scratch.g_i[i - 1] * gorg;
         }
         for (int m = 0; m <= mmax; m++) {
           Real ssss = 0.0;
@@ -1701,7 +1908,7 @@ struct GaussianGmEval
             ssss +=
                 bcm[n] * scratch.r_i[n] * scratch.g_i[m - n] * scratch.Fm_[n];
           }
-          Gm[m] += ssss * scratch.oorhog_i[m];
+          Gm[m] += ssss * pfac;
         }
 #endif
       }
@@ -1762,7 +1969,8 @@ struct GenericGmEval : private GmEvalFunction {
   /// @return the maximum value of m for which the \f$ G_m(\rho, T) \f$ can be
   /// computed with this object
   int max_m() const { return mmax_; }
-  /// @return the precision with which this object can compute the Boys function
+  /// @return the precision with which this object can compute the Boys
+  /// function
   Real precision() const { return precision_; }
 
  private:
@@ -1816,7 +2024,8 @@ struct delta_gm_eval {
 };
 
 /// core integral evaluator for \f$ r_{12}^K \f$ kernel
-/// @tparam K currently supported \c K=1 (use Boys engine directly for \c K=-1)
+/// @tparam K currently supported \c K=1 (use Boys engine directly for \c
+/// K=-1)
 /// @note need extra scratch for Boys function values when \c K==1,
 ///       the Gm vector is not long enough for scratch
 
@@ -2005,9 +2214,9 @@ void LinearSolveDamped(const std::vector<Real>& A, const std::vector<Real>& b,
 }
 
 /**
- * computes a least-squares fit of \f$ -exp(-\zeta r_{12})/\zeta = \sum_{i=1}^n
- * c_i exp(-a_i r_{12}^2) \f$ on \f$ r_{12} \in [0, x_{\rm max}] \f$ discretized
- * to npts.
+ * computes a least-squares fit of \f$ -exp(-\zeta r_{12})/\zeta =
+ * \sum_{i=1}^n c_i exp(-a_i r_{12}^2) \f$ on \f$ r_{12} \in [0, x_{\rm max}]
+ * \f$ discretized to npts.
  * @param[in] n
  * @param[in] zeta
  * @param[out] geminal
@@ -2118,8 +2327,8 @@ void stg_ng_fit(unsigned int n, Real zeta,
       std::vector<double> aa_0(aa);
       for (unsigned int i = 0; i < n; ++i) aa_0[i] += delta[i + n];
 
-      // if any of the exponents are negative the step is too large and need to
-      // increase damping
+      // if any of the exponents are negative the step is too large and need
+      // to increase damping
       bool step_too_large = false;
       for (unsigned int i = 0; i < n; ++i)
         if (aa_0[i] < 0.0) {

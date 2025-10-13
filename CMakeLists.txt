@@ -121,6 +121,8 @@ option_with_print(BUILD_SHARED_LIBS
   "Build Libint library as shared, not static" OFF)
 option_with_print(LIBINT2_BUILD_SHARED_AND_STATIC_LIBS
   "Build both shared and static Libint libraries in one shot. Uses -fPIC." OFF)
+option_with_print(LIBINT2_ENABLE_MPFR
+  "Use GNU MPFR library for high-precision testing (EXPERTS ONLY). Consumed at library build-time." OFF)
 
 #  <<<  Which Integrals Classes, Which Derivative Levels  >>>
 

@@ -1,0 +1,44 @@
+[build-system]
+requires = ["scikit-build-core>=0.8.0", "pybind11>=3.0.0"]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "libint2"
+version = "@LIBINT_VERSION@"
+description = "Python bindings for the Libint library - a high-performance library for computing molecular integrals"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "LGPL-3.0-or-later"}
+authors = [
+    {name = "Libint Contributors"}
+]
+classifiers = [
+    "Development Status :: Stable",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: GNU Lesser General Public License v3 or later (LGPLv3+)",
+    "Programming Language :: C++",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Chemistry",
+]
+
+[tool.scikit-build]
+# The CMake target for the Python bindings is "libint2-python"
+cmake.targets = ["libint2-python"]
+# Build directory
+build-dir = "build"
+# Set the install directory to the Python package location
+wheel.install-dir = "libint2"
+# Don't copy CMake config files to the wheel
+cmake.build-type = "Release"
+# Minimum CMake version
+cmake.minimum-version = "3.16"
+
+[tool.scikit-build.cmake.define]
+# Pass through CMAKE_BUILD_TYPE from environment if set
+CMAKE_BUILD_TYPE = {env = "CMAKE_BUILD_TYPE", default = "Release"}

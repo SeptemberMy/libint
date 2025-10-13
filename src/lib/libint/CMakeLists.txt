@@ -207,7 +207,7 @@ else()
             find_package(Python COMPONENTS Interpreter REQUIRED)
             add_custom_target_subproject(
               libint2 check-python
-              COMMAND ${Python_EXECUTABLE} -m setup test
+              COMMAND ${Python_EXECUTABLE} -m pytest ${PROJECT_SOURCE_DIR}/python/tests -v
               WORKING_DIRECTORY ${BINARY_DIR}/python
               DEPENDS
                 "library-install"

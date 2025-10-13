@@ -15,10 +15,6 @@ CPPFLAGS += -I$(SRCDIR)/$(TOPDIR)/src/lib/libint
 # include processed headers from the compiler directory
 CPPFLAGS += -I$(TOPDIR)/src/bin/libint
 
-COMPILER_LIB = $(TOPDIR)/src/bin/libint/libINT.a
-COMPUTE_LIB = -lint2
-vpath %.a $(TOPDIR)/lib:$(TOPDIR)/lib/.libs 
-
 OBJSUF = o
 DEPSUF = d
 CXXDEPENDSUF = none
@@ -30,7 +26,11 @@ CXXTESTOBJ = $(CXXTESTSRC:%.cc=%.$(OBJSUF))
 CXXTESTDEP = $(CXXTESTSRC:%.cc=%.$(DEPSUF))
 
 check:: $(TEST)
-	./$(TEST) 0 2 && ./$(TEST) 1 1 && ./$(TEST) 2 1 && ./$(TEST) 3 1 && ./$(TEST) 4 1
+	LD_LIBRARY_PATH=$(TOPDIR)/lib/.libs:$(LD_LIBRARY_PATH) DYLD_LIBRARY_PATH=$(TOPDIR)/lib/.libs:$(DYLD_LIBRARY_PATH) ./$(TEST) 0 2
+	LD_LIBRARY_PATH=$(TOPDIR)/lib/.libs:$(LD_LIBRARY_PATH) DYLD_LIBRARY_PATH=$(TOPDIR)/lib/.libs:$(DYLD_LIBRARY_PATH) ./$(TEST) 1 1
+	LD_LIBRARY_PATH=$(TOPDIR)/lib/.libs:$(LD_LIBRARY_PATH) DYLD_LIBRARY_PATH=$(TOPDIR)/lib/.libs:$(DYLD_LIBRARY_PATH) ./$(TEST) 2 1
+	LD_LIBRARY_PATH=$(TOPDIR)/lib/.libs:$(LD_LIBRARY_PATH) DYLD_LIBRARY_PATH=$(TOPDIR)/lib/.libs:$(DYLD_LIBRARY_PATH) ./$(TEST) 3 1
+	LD_LIBRARY_PATH=$(TOPDIR)/lib/.libs:$(LD_LIBRARY_PATH) DYLD_LIBRARY_PATH=$(TOPDIR)/lib/.libs:$(DYLD_LIBRARY_PATH) ./$(TEST) 4 1
 
 ifeq ($(CXX_COMPATIBLE_WITH_CXXGEN),yes)
 $(TEST): $(CXXTESTOBJ) $(COMPILER_LIB) $(COMPUTE_LIB)
@@ -70,4 +70,3 @@ endif
 
 -include $(CXXTESTDEP)
 endif
-

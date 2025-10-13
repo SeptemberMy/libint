@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2004-2023 Edward F. Valeev
+ *  Copyright (C) 2004-2024 Edward F. Valeev
  *
  *  This file is part of Libint.
  *
@@ -40,6 +40,9 @@
 
 /* Prefix for all names in API */
 #cmakedefine LIBINT_API_PREFIX "@LIBINT_API_PREFIX@"
+
+/* Max AM supported by Libint *in principle* */
+#cmakedefine LIBINT_HARD_MAX_AM @LIBINT_HARD_MAX_AM@
 
 /* Max AM (same for all derivatives; if not defined see LIBINT_MAX_AM_LIST) */
 #cmakedefine LIBINT_MAX_AM @LIBINT_MAX_AM@
@@ -341,6 +344,9 @@
 #ifndef LIBINT_MAYBE_UNUSED  /* fallback */
 #define LIBINT_MAYBE_UNUSED
 #endif
+
+/* maps angular momentum to the corresponding symbol: 0 -> s, 1 -> p, etc. */
+#define LIBINT_AM2SYMBOL "spdfghiklmnoqrtuvwxyz"
 
 #if @_EXPORT_MODE@
 #include "libint2/config2.h"

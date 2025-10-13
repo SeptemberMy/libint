@@ -7,8 +7,8 @@ project(Libint LANGUAGES CXX C)
 
 # Set Libint version ===================================================================================================
 set(LIBINT_MAJOR_VERSION 2)
-set(LIBINT_MINOR_VERSION 8)
-set(LIBINT_MICRO_VERSION 1)  # Sync this with python/CMakeLists.txt
+set(LIBINT_MINOR_VERSION 11)
+set(LIBINT_MICRO_VERSION 2)  # Sync this with python/CMakeLists.txt
 set(LIBINT_BUILDID )
 set(LIBINT_VERSION "${LIBINT_MAJOR_VERSION}.${LIBINT_MINOR_VERSION}.${LIBINT_MICRO_VERSION}")
 if (LIBINT_BUILDID)
@@ -111,7 +111,7 @@ endif (TARGET Eigen3::Eigen)
 if (TARGET libint2_Eigen)
   get_property(EIGEN3_INCLUDE_DIR TARGET libint2_Eigen PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
   message(STATUS "Found Eigen3: EIGEN3_INCLUDE_DIR=${EIGEN3_INCLUDE_DIR}")
-  install(TARGETS libint2_Eigen  EXPORT libint2 COMPONENT Eigen)
+  install(TARGETS libint2_Eigen EXPORT libint2 COMPONENT Eigen)
   set(LIBINT_HAS_CXX_API 1)
 else(TARGET libint2_Eigen)
   set(LIBINT_HAS_CXX_API 0)
@@ -121,14 +121,31 @@ if (REQUIRE_CXX_API AND NOT ${LIBINT_HAS_CXX_API})
 endif()
 
 if (NOT LIBINT_USE_BUNDLED_BOOST)
-  if (NOT TARGET Boost::boost)
+  if (NOT TARGET Boost::headers)
     find_package(Boost 1.29)
   endif()
-  if (TARGET Boost::boost)
+  if (TARGET Boost::headers)
     cmake_push_check_state()
 
     list(APPEND CMAKE_REQUIRED_FLAGS "-std=c++11")
-    list(APPEND CMAKE_REQUIRED_LIBRARIES Boost::boost)
+
+    # since Boost::headers is an ALIAS pass the real target to check_cxx_source_compiles
+    get_target_property(Boost_target_for_linking Boost::headers ALIASED_TARGET)
+    if (NOT Boost_target_for_linking)
+        set(Boost_target_for_linking Boost::headers)
+    endif()
+    # corner case: if using modularized Boost then use boost_preprocessor target directly
+    if (TARGET boost_preprocessor)
+        set(Boost_target_for_linking boost_preprocessor)
+    endif()
+    get_target_property(Boost_target_for_linking_is_imported ${Boost_target_for_linking} IMPORTED)
+    if (Boost_target_for_linking_is_imported)
+        list(APPEND CMAKE_REQUIRED_LIBRARIES ${Boost_target_for_linking})
+    else()
+        get_target_property(Boost_target_for_linking_interface_include_directories ${Boost_target_for_linking} INTERFACE_INCLUDE_DIRECTORIES)
+        string(REGEX REPLACE ".*;?\\$<BUILD_INTERFACE:([^>]*)>;?.*" "\\1" Boost_target_for_linking_build_interface_include_directories "${Boost_target_for_linking_interface_include_directories}")
+        list(APPEND CMAKE_REQUIRED_INCLUDES ${Boost_target_for_linking_build_interface_include_directories})
+    endif()
 
     check_cxx_source_compiles("
             #include <boost/preprocessor.hpp>
@@ -243,15 +260,19 @@ endif()
 if (LIBINT2_BUILD_SHARED_AND_STATIC_LIBS)
   add_library(libint2 SHARED $<TARGET_OBJECTS:libint2_obj>)
   set_target_properties(libint2 PROPERTIES LIBRARY_OUTPUT_NAME int2 VERSION ${LIBINT_VERSION} SOVERSION 2)
-  if(MSVC)
+  if(WIN32)
     target_compile_definitions(libint2 PUBLIC _USE_MATH_DEFINES)
-    target_compile_options(libint2 PUBLIC "/EHsc")
+    if(MSVC)
+      target_compile_options(libint2 PUBLIC "/EHsc")
+    endif()
   endif()
   add_library(libint2-static STATIC $<TARGET_OBJECTS:libint2_obj>)
   set_target_properties(libint2-static PROPERTIES ARCHIVE_OUTPUT_NAME int2)
-  if(MSVC)
+  if(WIN32)
     target_compile_definitions(libint2-static PUBLIC _USE_MATH_DEFINES)
-    target_compile_options(libint2-static PUBLIC "/EHsc")
+    if(MSVC)
+      target_compile_options(libint2-static PUBLIC "/EHsc")
+    endif()
   endif()
   target_include_directories(libint2-static INTERFACE
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include> $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
@@ -264,6 +285,7 @@ if (LIBINT2_BUILD_SHARED_AND_STATIC_LIBS)
   # Add libraries to the list of installed components
   install(TARGETS libint2-static EXPORT libint2
         COMPONENT libint2
+        RUNTIME DESTINATION "${LIBINT2_INSTALL_BINDIR}"
         LIBRARY DESTINATION "${LIBINT2_INSTALL_LIBDIR}"
         ARCHIVE DESTINATION "${LIBINT2_INSTALL_LIBDIR}"
         # includes are installed by the include/CMakeLists.txt.include.export
@@ -271,10 +293,9 @@ if (LIBINT2_BUILD_SHARED_AND_STATIC_LIBS)
        )
 else()
   add_library(libint2 $<TARGET_OBJECTS:libint2_obj>)
+  set_target_properties(libint2 PROPERTIES OUTPUT_NAME int2)
   if (BUILD_SHARED_LIBS)
-    set_target_properties(libint2 PROPERTIES LIBRARY_OUTPUT_NAME int2)
-  else(BUILD_SHARED_LIBS)
-    set_target_properties(libint2 PROPERTIES ARCHIVE_OUTPUT_NAME int2)
+    set_target_properties(libint2 PROPERTIES VERSION ${LIBINT_VERSION} SOVERSION 2)
   endif(BUILD_SHARED_LIBS)
 endif()
 # In any case, there will exist a target named "int2": diminish code length by
@@ -292,6 +313,7 @@ add_library(Libint2::int2 ALIAS libint2)
 # Add libraries to the list of installed components
 install(TARGETS libint2 EXPORT libint2
     COMPONENT libint2
+    RUNTIME DESTINATION "${LIBINT2_INSTALL_BINDIR}"
     LIBRARY DESTINATION "${LIBINT2_INSTALL_LIBDIR}"
     ARCHIVE DESTINATION "${LIBINT2_INSTALL_LIBDIR}"
     # includes are installed by the include/CMakeLists.txt.include.export
@@ -299,12 +321,6 @@ install(TARGETS libint2 EXPORT libint2
     )
 
 add_subdirectory(include)
-
-if (LIBINT2_BUILD_SHARED_AND_STATIC_LIBS)
-  set(int2_library libint2-static)
-else()
-  set(int2_library libint2)
-endif()
 
 # install basis set library
 if(MSVC)
@@ -323,34 +339,40 @@ endif()
 # LibintCXX library ====================================================================================================
 
 if (LIBINT_HAS_CXX_API)
-  add_library(libint2_cxx INTERFACE)
-  target_compile_features(libint2_cxx INTERFACE "cxx_std_11")
-  target_link_libraries(libint2_cxx INTERFACE ${int2_library} libint2_Eigen)
+  add_library(libint2_cxx_prerequisites INTERFACE)
+  target_compile_features(libint2_cxx_prerequisites INTERFACE "cxx_std_11")
+  target_link_libraries(libint2_cxx_prerequisites INTERFACE libint2_Eigen)
   if (LIBINT_HAS_SYSTEM_BOOST_PREPROCESSOR_VARIADICS)
-      target_link_libraries(libint2_cxx INTERFACE Boost::boost)
+      target_link_libraries(libint2_cxx_prerequisites INTERFACE Boost::headers)
   endif(LIBINT_HAS_SYSTEM_BOOST_PREPROCESSOR_VARIADICS)
-    if(MSVC)
-        # MSVC does not include <cmath> constants, unless _USE_MATH_DEFINES is defined.
-        # _CRT_* to squash some getenv, strdup, strncpy, ctime, fopen warnings
-        target_compile_definitions(
-          libint2_cxx
-          INTERFACE
-            _USE_MATH_DEFINES
-            _CRT_NONSTDC_NO_DEPRECATE
-            _CRT_NONSTDC_NO_WARNINGS
-            _CRT_SECURE_NO_WARNINGS
-          )
-        # Set the exception handling model
-        target_compile_options(
-          libint2_cxx
-          INTERFACE
-            "/EHsc"
-          )
-    endif()
-  get_filename_component(DATADIR_ABSOLUTE "${CMAKE_INSTALL_PREFIX}/${LIBINT2_INSTALL_DATADIR}" ABSOLUTE)
-  target_compile_definitions(libint2_cxx INTERFACE
-          $<BUILD_INTERFACE:SRCDATADIR="${PROJECT_SOURCE_DIR}/lib/basis">
+  if(WIN32)
+    # Windows does not include <cmath> constants, unless _USE_MATH_DEFINES is defined.
+    target_compile_definitions(
+      libint2_cxx_prerequisites
+      INTERFACE
+        _USE_MATH_DEFINES
     )
+    if(MSVC)
+      # _CRT_* to squash some getenv, strdup, strncpy, ctime, fopen warnings
+      target_compile_definitions(
+        libint2_cxx_prerequisites
+        INTERFACE
+        _CRT_NONSTDC_NO_DEPRECATE
+        _CRT_NONSTDC_NO_WARNINGS
+        _CRT_SECURE_NO_WARNINGS
+      )
+      # Set the exception handling model
+      target_compile_options(
+        libint2_cxx_prerequisites
+        INTERFACE
+          "/EHsc"
+      )
+    endif()
+  endif()
+  get_filename_component(DATADIR_ABSOLUTE "${CMAKE_INSTALL_PREFIX}/${LIBINT2_INSTALL_DATADIR}" ABSOLUTE)
+  target_compile_definitions(libint2_cxx_prerequisites INTERFACE
+        $<BUILD_INTERFACE:SRCDATADIR="${PROJECT_SOURCE_DIR}/lib/basis">
+  )
   if (NOT MSVC)
       # TODO fix the DATADIR define escaping on Windows
       # * below works fine in tests
@@ -358,21 +380,36 @@ if (LIBINT_HAS_CXX_API)
       # * prefix replacement in conda used instead on Windows
       # * LIBINT2_INSTALL_DATADIR -> LIBINT2_INSTALL_BASISDIR
       target_compile_definitions(
-        libint2_cxx
+        libint2_cxx_prerequisites
         INTERFACE
           $<INSTALL_INTERFACE:DATADIR="\$\{_IMPORT_PREFIX\}/${LIBINT2_INSTALL_DATADIR}">
         )
   endif()
-  # Add library to the list of installed components
-  install(TARGETS libint2_cxx EXPORT libint2
+
+  set(LIBINT2_CXX_LIBS_TO_INSTALL libint2_cxx_prerequisites)
+
+  add_library(libint2_cxx INTERFACE)
+  target_link_libraries(libint2_cxx INTERFACE libint2_cxx_prerequisites libint2)
+  list(APPEND LIBINT2_CXX_LIBS_TO_INSTALL libint2_cxx)
+  # Alias libint2_cxx -> Libint2::cxx for in-source builds
+  add_library(Libint2::cxx ALIAS libint2_cxx)
+  if (LIBINT2_BUILD_SHARED_AND_STATIC_LIBS)
+    add_library(libint2_cxx-static INTERFACE)
+    target_link_libraries(libint2_cxx-static INTERFACE libint2_cxx_prerequisites libint2-static)
+    list(APPEND LIBINT2_CXX_LIBS_TO_INSTALL libint2_cxx-static)
+    # Alias libint2_cxx-static -> Libint2::cxx-static for in-source builds
+    add_library(Libint2::cxx-static ALIAS libint2_cxx-static)
+  endif()
+
+  # Add cxx librar{y,ies} and prereqs to the list of installed components
+  install(TARGETS ${LIBINT2_CXX_LIBS_TO_INSTALL} EXPORT libint2
           COMPONENT cxx
+          RUNTIME DESTINATION "${LIBINT2_INSTALL_BINDIR}"
           LIBRARY DESTINATION "${LIBINT2_INSTALL_LIBDIR}"
           ARCHIVE DESTINATION "${LIBINT2_INSTALL_LIBDIR}"
           # includes are installed by the include/CMakeLists.txt.include.export
           # INCLUDES DESTINATION "${LIBINT2_INSTALL_INCLUDEDIR}"
-          )
-  # Alias libint2_cxx -> Libint2::cxx for in-source builds
-  add_library(Libint2::cxx ALIAS libint2_cxx)
+  )
 endif(LIBINT_HAS_CXX_API)
 
 # Tests ================================================================================================================
@@ -381,12 +418,14 @@ enable_testing(true)
 add_custom_target_subproject(libint2 check USES_TERMINAL COMMAND ${CMAKE_CTEST_COMMAND} -V -R "libint2/")
 
 add_executable(eritest-libint2 EXCLUDE_FROM_ALL tests/eri/test.cc)
-target_link_libraries(eritest-libint2 ${int2_library})
+target_link_libraries(eritest-libint2 libint2)
 target_include_directories(eritest-libint2 PRIVATE ${PROJECT_SOURCE_DIR}/tests/eri)
-if(MSVC)
-    # TODO on future target pass, def should be added to the L2 target, not added to test
-    target_compile_definitions(eritest-libint2 PUBLIC _USE_MATH_DEFINES)
+if(WIN32)
+  # TODO on future target pass, def should be added to the L2 target, not added to test
+  target_compile_definitions(eritest-libint2 PUBLIC _USE_MATH_DEFINES)
+  if(MSVC)
     target_compile_options(eritest-libint2 PUBLIC "/EHsc")
+  endif()
 endif()
 
 add_test(libint2/eritest/build "${CMAKE_COMMAND}" --build ${CMAKE_BINARY_DIR} --target eritest-libint2)
@@ -395,8 +434,13 @@ add_test(NAME libint2/eritest/run0
         COMMAND $<TARGET_FILE:eritest-libint2> 0 2)
 set_tests_properties(libint2/eritest/run0
         PROPERTIES FIXTURES_REQUIRED LIBINT2_ERITEST_EXEC)
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")  # OK to run l=2 gradients with optimization
+  set(LIBINT2_ERITEST_RUN1_LMAX 1)
+else()
+  set(LIBINT2_ERITEST_RUN1_LMAX 2)
+endif()
 add_test(NAME libint2/eritest/run1
-        COMMAND $<TARGET_FILE:eritest-libint2> 1 1)
+        COMMAND $<TARGET_FILE:eritest-libint2> 1 ${LIBINT2_ERITEST_RUN1_LMAX})
 set_tests_properties(libint2/eritest/run1
         PROPERTIES FIXTURES_REQUIRED LIBINT2_ERITEST_EXEC)
 add_test(NAME libint2/eritest/run2
@@ -424,6 +468,7 @@ if (LIBINT_HAS_CXX_API)
             tests/unit/test-c-api.cc
             tests/unit/test-core.cc
             tests/unit/test-core-ints.cc
+            tests/unit/test-df-autogen.cc
             tests/unit/test-permute.cc
             tests/unit/test-precision.cc
             tests/unit/test-shell-order.cc
@@ -491,8 +536,8 @@ if (ENABLE_FORTRAN)
     # specify the location of modules
     set(CMAKE_Fortran_MODULE_DIRECTORY "${PROJECT_BINARY_DIR}/fortran/modules/")
 
-    # preprocess libint2.h ... this is a guess for UNIX systems only
-    if (UNIX)
+    # preprocess libint2.h ... this is a guess for non-MSVC compilers
+    if (NOT MSVC)
 
         file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/fortran)
 
@@ -504,7 +549,7 @@ if (ENABLE_FORTRAN)
                 COMMENT "Generating libint2.h.i"
                 )
     else()
-        message(FATAL_ERROR "Cannot run preprocessor on non-Unix systems, disable Fortran to proceed")
+        message(FATAL_ERROR "Cannot run preprocessor with MSVC compilers, disable Fortran to proceed")
     endif()
 
     # translated Libint_t
@@ -534,7 +579,8 @@ if (ENABLE_FORTRAN)
 
     # tests
     add_executable(fortran_example-libint2 EXCLUDE_FROM_ALL fortran/fortran_example.F90)
-    target_link_libraries(fortran_example-libint2 ${int2_library} libint_f)
+    set_target_properties(fortran_example-libint2 PROPERTIES LINKER_LANGUAGE Fortran)
+    target_link_libraries(fortran_example-libint2 libint2 libint_f)
     target_include_directories(fortran_example-libint2 PRIVATE $<TARGET_PROPERTY:libint_f,Fortran_MODULE_DIRECTORY>)
 
     add_test(libint2/fortran_example/build "${CMAKE_COMMAND}" --build ${PROJECT_BINARY_DIR} --target fortran_example-libint2)
@@ -546,6 +592,7 @@ if (ENABLE_FORTRAN)
 
     if (LIBINT_HAS_CXX_API)
         add_executable(fortran_test-libint2 EXCLUDE_FROM_ALL fortran/test.cc fortran/test-eri.cc $<TARGET_OBJECTS:libint_f>)
+        set_target_properties(fortran_test-libint2 PROPERTIES LINKER_LANGUAGE Fortran)
         target_link_libraries(fortran_test-libint2 libint2_cxx libint_f)
         target_include_directories(fortran_test-libint2 PRIVATE $<TARGET_PROPERTY:libint_f,Fortran_MODULE_DIRECTORY>)
         add_test(libint2/fortran_test/build "${CMAKE_COMMAND}" --build ${PROJECT_BINARY_DIR} --target fortran_test-libint2)
@@ -628,6 +675,11 @@ install(FILES
 add_custom_target_subproject(libint install-config
         COMMAND ${CMAKE_COMMAND} -DCOMPONENT=libint2-config -P ${PROJECT_BINARY_DIR}/cmake_install.cmake
         COMMENT "Installing Libint2 config components")
+
+# Make Libint consumable from the build directory without installation
+export(EXPORT libint2
+       NAMESPACE Libint2::
+       FILE "${PROJECT_BINARY_DIR}/libint2-targets.cmake")
 
 feature_summary(WHAT ALL
         DESCRIPTION "=== Libint2 Package/Feature Info ===")
