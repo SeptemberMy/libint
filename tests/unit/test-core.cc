@@ -1,5 +1,40 @@
+/*
+ *  Copyright (C) 2004-2024 Edward F. Valeev
+ *
+ *  This file is part of Libint library.
+ *
+ *  Libint library is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Lesser General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  Libint library is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with Libint library.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
+
+#include <libint2/solidharmonics.h>
+
 #include "catch.hpp"
 #include "fixture.h"
+
+TEST_CASE("SolidHarmonicsCoefficients ctor", "[shell]") {
+  using libint2::solidharmonics::SolidHarmonicsCoefficients;
+  REQUIRE_NOTHROW(SolidHarmonicsCoefficients<long double>::instance(12));
+  auto sh12 = SolidHarmonicsCoefficients<long double>::instance(12);
+  CHECK_NOTHROW(sh12.coeff(12, 0, 0, 0, 12));
+  CHECK(sh12.coeff(12, 0, 0, 0, 12) == Approx(1));
+  CHECK_NOTHROW(
+      SolidHarmonicsCoefficients<long double>::make_instance(25).coeff(25, 0, 0,
+                                                                       0, 25));
+  CHECK(SolidHarmonicsCoefficients<long double>::make_instance(25).coeff(
+            25, 0, 0, 0, 25) == Approx(1));
+}
 
 TEST_CASE("Shell ctor", "[shell]") {
   REQUIRE_NOTHROW(Shell{});

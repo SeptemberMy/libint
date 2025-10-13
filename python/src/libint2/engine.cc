@@ -1,6 +1,30 @@
-#include <Eigen/Dense>
-#include <atomic>
+/*
+ *  Copyright (C) 2004-2024 Edward F. Valeev
+ *
+ *  This file is part of Libint library.
+ *
+ *  Libint library is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Lesser General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  Libint library is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with Libint library.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
+
 #include <libint2.hpp>
+
+#include <Eigen/Dense>
+#include <unsupported/Eigen/CXX11/Tensor>
+
+#include <atomic>
+#include <new>
 #include <thread>
 #include <tuple>
 #include <vector>
@@ -124,16 +148,35 @@ void parallel_for(Task &&task, int num_threads, const Range &A, const Range &B,
 
 template <class... Args>
 py::object parallel_compute(libint2::Engine &engine, const Args &...args) {
-  py::array_t<double> V({nbf(args)...});
+  constexpr auto N = sizeof...(Args);
+
+  // Create Python array and grab a Eigen::Tensor view into its data
+  const std::array<size_t, N> dims = {nbf(args)...};
+  py::array_t<double> result(dims);
+  auto result_ptr = result.mutable_data();
+  Eigen::TensorMap<Eigen::Tensor<double, N, Eigen::RowMajor>> V(result_ptr,
+                                                                dims);
+
   auto task = [&, engine](auto... braket) mutable {
-    auto v = compute(engine, std::get<0>(braket)...);
-    if (v.is_none()) return;
-    auto idx = py::make_tuple(basis::slice<py::slice>(braket)...);
-    V[idx] = v;
+    // Compute the integral - this does not use Python API
+    engine.compute(std::get<0>(braket)...);
+    const auto &buf = engine.results();
+    if (!buf[0]) return;
+
+    // Get shell sizes and basis function offsets
+    std::array<size_t, N> shell_sizes = {std::get<0>(braket).size()...};
+    std::array<size_t, N> bf_offsets = {
+        static_cast<size_t>(std::get<1>(braket))...};
+
+    auto V_sh = V.slice(bf_offsets, shell_sizes);
+    // N.B. Libint returns shells sets in row-major layout
+    V_sh = Eigen::TensorMap<Eigen::Tensor<const double, N, Eigen::RowMajor>>(
+        buf[0], shell_sizes);
   };
-  size_t num_threads = 1;
-  parallel_for(task, num_threads, basis::enumerate(args)...);
-  return V;
+
+  parallel_for(task, num_threads(), basis::enumerate(args)...);
+
+  return result;
 }
 
 template <class Arg>

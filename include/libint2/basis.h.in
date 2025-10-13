@@ -1,22 +1,22 @@
 /*
- *  Copyright (C) 2004-2023 Edward F. Valeev
- *
- *  This file is part of Libint.
- *
- *  Libint is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU Lesser General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  Libint is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with Libint.  If not, see <http://www.gnu.org/licenses/>.
- *
- */
+*  Copyright (C) 2004-2024 Edward F. Valeev
+*
+*  This file is part of Libint library.
+*
+*  Libint library is free software: you can redistribute it and/or modify
+*  it under the terms of the GNU Lesser General Public License as published by
+*  the Free Software Foundation, either version 3 of the License, or
+*  (at your option) any later version.
+*
+*  Libint library is distributed in the hope that it will be useful,
+*  but WITHOUT ANY WARRANTY; without even the implied warranty of
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+*  GNU Lesser General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public License
+*  along with Libint library.  If not, see <http://www.gnu.org/licenses/>.
+*
+*/
 
 #ifndef _libint2_src_lib_libint_basis_h_
 #define _libint2_src_lib_libint_basis_h_
@@ -171,7 +171,8 @@ namespace libint2 {
               } // shell loop
             }
             else if (throw_if_no_match) {  // not found? throw, if needed
-              std::string errmsg(std::string("did not find the basis for this Z in ") +
+              std::string errmsg(std::string("did not find the basis for Z=") +
+                      std::to_string(Z) + " in " +
                       basis_lib_path + PATH_SEPARATOR + basis_component_names[comp_idx] + ".g94");
               throw std::logic_error(errmsg);
             }
@@ -481,7 +482,7 @@ namespace libint2 {
                                                                             ) {
 
         std::locale locale(locale_name.c_str());  // TODO omit c_str() with up-to-date stdlib
-        std::vector<std::vector<libint2::Shell>> ref_shells(118); // 118 = number of chemical elements
+        std::vector<std::vector<libint2::Shell>> ref_shells(119); // 118 = number of chemical elements + 1 because we insert at(Z)
         std::ifstream is(file_dot_g94);
         is.imbue(locale);
 
@@ -620,15 +621,15 @@ namespace libint2 {
         return ref_shells;
       }
 
-      DEPRECATED static size_t nbf(const std::vector<libint2::Shell>& shells) {
+      LIBINT2_DEPRECATED static size_t nbf(const std::vector<libint2::Shell>& shells) {
         return libint2::nbf(shells);
       }
 
-      DEPRECATED static size_t max_nprim(const std::vector<libint2::Shell>& shells) {
+      LIBINT2_DEPRECATED static size_t max_nprim(const std::vector<libint2::Shell>& shells) {
         return libint2::max_nprim(shells);
       }
 
-      DEPRECATED static int max_l(const std::vector<libint2::Shell>& shells) {
+      LIBINT2_DEPRECATED static int max_l(const std::vector<libint2::Shell>& shells) {
         return libint2::max_l(shells);
       }
 

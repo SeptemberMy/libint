@@ -1,20 +1,20 @@
 /*
- *  Copyright (C) 2004-2021 Edward F. Valeev
+ *  Copyright (C) 2004-2024 Edward F. Valeev
  *
- *  This file is part of Libint.
+ *  This file is part of Libint library.
  *
- *  Libint is free software: you can redistribute it and/or modify
+ *  Libint library is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Lesser General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
  *
- *  Libint is distributed in the hope that it will be useful,
+ *  Libint library is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
  *
  *  You should have received a copy of the GNU Lesser General Public License
- *  along with Libint.  If not, see <http://www.gnu.org/licenses/>.
+ *  along with Libint library.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
 
@@ -87,7 +87,7 @@ static const std::vector<element>& get_element_info() {
       {99, "einsteinum", "Es"},   {100, "fermium", "Fm"},
       {101, "mendelevium", "Md"}, {102, "nobelium", "No"},
       {103, "lawrencium", "Lr"},  {104, "rutherfordium", "Rf"},
-      {105, "hahnium", "Ha"},     {106, "seaborgium", "Sg"},
+      {105, "dubnium", "Db"},     {106, "seaborgium", "Sg"},
       {107, "bohrium", "Bh"},     {108, "hassium", "Hs"},
       {109, "meitnerium", "Mt"},  {110, "darmstadtium", "Ds"},
       {111, "roentgenium", "Rg"}, {112, "copernicium", "Cn"},

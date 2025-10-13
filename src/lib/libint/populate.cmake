@@ -29,4 +29,3 @@ file(
     "${PROJECT_SOURCE_DIR}/src/lib/libint/configuration.cc.cmake.in"
   DESTINATION "${EXPORT_STAGE_DIR}/src"
   )
-

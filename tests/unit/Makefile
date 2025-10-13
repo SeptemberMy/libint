@@ -14,10 +14,6 @@ CPPFLAGS += -DSRCDATADIR=\"$(SRCDIR)/$(TOPDIR)/lib/basis\"
 # initialize statics explicitly in test.cc
 CPPFLAGS += -DLIBINT2_CONSTEXPR_STATICS=0
 
-COMPILER_LIB = $(TOPDIR)/src/bin/libint/libINT.a
-COMPUTE_LIB = -lint2
-vpath %.a $(TOPDIR)/lib:$(TOPDIR)/lib/.libs
-
 OBJSUF = o
 DEPSUF = d
 CXXDEPENDSUF = none
@@ -26,7 +22,8 @@ CXXDEPENDFLAGS = -M
 TEST1 = test
 CXXTEST1SRC = test.cc test-core.cc test-permute.cc \
   test-1body.cc test-core-ints.cc test-c-api.cc test-shell-order.cc \
-  test-util.cc c-api-util.cc test-2body.cc test-precision.cc test-basis.cc
+  test-util.cc c-api-util.cc test-2body.cc test-precision.cc test-basis.cc\
+  test-df-autogen.cc
 CXXTEST1OBJ = $(CXXTEST1SRC:%.cc=%.$(OBJSUF))
 CXXTEST1DEP = $(CXXTEST1SRC:%.cc=%.$(DEPSUF))
 CTEST1SRC = c-api.c
@@ -55,8 +52,8 @@ $(TEST1): $(CXXTEST1OBJ) $(CTEST1OBJ) $(COMPUTE_LIB)
 	$(LD) -o $@ $(CXXFLAGS) $(LDFLAGS) $^ $(SYSLIBS)
 
 check1:: $(TEST1)
-	./$^
-	./$^ --shgshell-order=gaussian
+	LD_LIBRARY_PATH=$(TOPDIR)/lib/.libs:$(LD_LIBRARY_PATH) DYLD_LIBRARY_PATH=$(TOPDIR)/lib/.libs:$(DYLD_LIBRARY_PATH) ./$^
+	LD_LIBRARY_PATH=$(TOPDIR)/lib/.libs:$(LD_LIBRARY_PATH) DYLD_LIBRARY_PATH=$(TOPDIR)/lib/.libs:$(DYLD_LIBRARY_PATH) ./$^ --shgshell-order=gaussian
 
 # Source files for timer and tester are to be compiled using CXXGEN
 $(TEST1): CXX=$(CXXGEN)

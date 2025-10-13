@@ -1,20 +1,20 @@
 /*
- *  Copyright (C) 2004-2021 Edward F. Valeev
+ *  Copyright (C) 2004-2024 Edward F. Valeev
  *
- *  This file is part of Libint.
+ *  This file is part of Libint compiler.
  *
- *  Libint is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU Lesser General Public License as published by
+ *  Libint compiler is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
  *
- *  Libint is distributed in the hope that it will be useful,
+ *  Libint compiler is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
+ *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with Libint.  If not, see <http://www.gnu.org/licenses/>.
+ *  You should have received a copy of the GNU General Public License
+ *  along with Libint compiler.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
 
@@ -34,28 +34,30 @@ typedef unsigned int uint;
 template <unsigned int N>
 struct RandomShellSet {
  public:
-  RandomShellSet(uint* am, uint veclen, uint contrdepth) {
+  RandomShellSet(uint* am, uint veclen, uint contrdepth,
+                 unsigned int seed = std::random_device{}()) {
     std::copy(am, am + N, l);
 
-    std::random_device rd;
-    std::mt19937 rng(rd());  // produces randomness out of thin air
-    std::uniform_real_distribution<> rdist(
-        0.1, 3.0);  // distribution that maps to 0.1 .. 3.0
-    auto die = [&rng, &rdist]() -> double {
-      return rdist(rng);
-    };  // glues randomness with mapping
+    std::mt19937 rng(seed);  // produces randomness out of thin air
+    std::uniform_real_distribution<> rdist(0.7,
+                                           1.3);  // distribution of coordinates
+    std::uniform_real_distribution<> ecdist(
+        0.1, 3.0);  // distribution of exponents/coefficients
+    // glues source randomness with mapping
+    auto rdie = [&rng, &rdist]() -> double { return rdist(rng); };
+    auto ecdie = [&rng, &ecdist]() -> double { return ecdist(rng); };
 
     for (uint c = 0; c < N; ++c) {
       R[c].resize(3);
-      std::generate(R[c].begin(), R[c].end(), die);
+      std::generate(R[c].begin(), R[c].end(), rdie);
 
       exp[c].resize(veclen);
       coef[c].resize(veclen);
       for (uint v = 0; v < veclen; ++v) {
         exp[c][v].resize(contrdepth);
-        std::generate(exp[c][v].begin(), exp[c][v].end(), die);
+        std::generate(exp[c][v].begin(), exp[c][v].end(), ecdie);
         coef[c][v].resize(contrdepth);
-        std::generate(coef[c][v].begin(), coef[c][v].end(), die);
+        std::generate(coef[c][v].begin(), coef[c][v].end(), ecdie);
       }
     }
   }

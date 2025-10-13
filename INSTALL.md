@@ -103,7 +103,7 @@ cmake/  COPYING  src/  tests/  ...
 
 * `🔵` required
 * `🔸` required or recommended, but there's a path forward without
-* `—` not involved
+* `-` not involved
 
 [^1]: C++ compiler that supports C++11 standard. C++11 standard is the fourth most recent international standard for C++, hence most modern compilers support it fully. A common compiler flag is `-std=c++11`, which CMake will impose on the compilation.
 
@@ -141,7 +141,7 @@ cmake/  COPYING  src/  tests/  ...
 
 [^23]: Python headers and interpreter needed for Pybind11 module.
 
-[^24]: [Pybind11](https://github.com/pybind/pybind11) used to export Libint2 C++11 API into a Python module. If a system installation is not detected, Valeev-group-tweaked source is fetched from GitHub.
+[^24]: [Pybind11](https://github.com/pybind/pybind11) used to export Libint2 C++11 API into a Python module. If a system installation is not detected, the pybind11 source is fetched from GitHub.
 
 -----------------------------------------------------------------------------
 
@@ -157,41 +157,41 @@ cmake/  COPYING  src/  tests/  ...
 
 ###  Which Integrals Classes, Which Derivative Levels (G)
 
-* `ENABLE_ONEBODY` — G — Compile with support for up to N-th derivatives of 1-body integrals. Use -1 for OFF. [Default=0]
-* `ENABLE_ERI` — G — Compile with support for up to N-th derivatives of 4-center electron repulsion integrals. Use -1 for OFF. [Default=0]
-* `ENABLE_ERI3` — G — Compile with support for up to N-th derivatives of 3-center electron repulsion integrals. Use -1 for OFF. [Default=-1]
-* `ENABLE_ERI2` — G — Compile with support for up to N-th derivatives of 2-center electron repulsion integrals. Use -1 for OFF. [Default=-1]
-* `ENABLE_G12` — G — Compile with support for N-th derivatives of MP2-F12 energies with Gaussian factors. Use -1 for OFF. [Default=-1]
-* `ENABLE_G12DKH` — G — Compile with support for N-th derivatives of DKH-MP2-F12 energies with Gaussian factors. Use -1 for OFF. [Default=-1]
+* `ENABLE_ONEBODY` - G - Compile with support for up to N-th derivatives of 1-body integrals. Use -1 for OFF. [Default=0]
+* `ENABLE_ERI` - G - Compile with support for up to N-th derivatives of 4-center electron repulsion integrals. Use -1 for OFF. [Default=0]
+* `ENABLE_ERI3` - G - Compile with support for up to N-th derivatives of 3-center electron repulsion integrals. Use -1 for OFF. [Default=-1]
+* `ENABLE_ERI2` - G - Compile with support for up to N-th derivatives of 2-center electron repulsion integrals. Use -1 for OFF. [Default=-1]
+* `ENABLE_G12` - G - Compile with support for N-th derivatives of MP2-F12 energies with Gaussian factors. Use -1 for OFF. [Default=-1]
+* `ENABLE_G12DKH` - G - Compile with support for N-th derivatives of DKH-MP2-F12 energies with Gaussian factors. Use -1 for OFF. [Default=-1]
 
-* `DISABLE_ONEBODY_PROPERTY_DERIVS` — G — Disable geometric derivatives of 1-body property integrals (all but overlap, kinetic, elecpot).
+* `DISABLE_ONEBODY_PROPERTY_DERIVS` - G - Disable geometric derivatives of 1-body property integrals (all but overlap, kinetic, elecpot).
    These derivatives are disabled by default to save compile time. Use OFF to enable.
    Note that the libtool build won't enable this- if forcibly enabled, build_libint balks. [Default=ON]
 
-* `ENABLE_T1G12_SUPPORT` — G — Enable [Ti,G12] integrals when G12 integrals are enabled. Irrelevant when `ENABLE_G12=OFF`. Use OFF to disable. [Default=ON]
+* `ENABLE_T1G12_SUPPORT` - G - Enable [Ti,G12] integrals when G12 integrals are enabled. Irrelevant when `ENABLE_G12=OFF`. Use OFF to disable. [Default=ON]
 
 
 ###  Which Ordering Conventions (G)
 
-* `LIBINT2_SHGAUSS_ORDERING` — G — Ordering for shells of solid harmonic Gaussians. [Default=standard]
-  * `standard` — standard ordering (-l, -l+1 ... l)
-  * `gaussian` — the Gaussian ordering (0, 1, -1, 2, -2, ... l, -l)
+* `LIBINT2_SHGAUSS_ORDERING` - G - Ordering for shells of solid harmonic Gaussians. [Default=standard]
+  * `standard` - standard ordering (-l, -l+1 ... l)
+  * `gaussian` - the Gaussian ordering (0, 1, -1, 2, -2, ... l, -l)
   See [Solid Harmonic Ordering Scope and History](solid-harmonic-ordering-scope-and-history)
-* `LIBINT2_CARTGAUSS_ORDERING` — G — Orderings for shells of cartesian Gaussians. [Default=standard]
-  * `standard` — standard ordering (xxx, xxy, xxz, xyy, xyz, xzz, yyy, ...) This is ordering of the Common Component Architecture (CCA) standard for molecular integral data exchange described in ["Components for Integral Evaluation in Quantum Chemistry", J. P. Kenny, C. L. Janssen, E. F. Valeev, and T. L. Windus, J. Comp. Chem. 29, 562 (2008)](http://dx.doi.org/10.1002/jcc.20815).
-  * `intv3` — intv3 ordering (yyy, yyz, yzz, zzz, xyy, xyz, xzz, xxy, xxz, xxx) This is used by IntV3, the default integral engine of [MPQC](https://github.com/evaleev/libint/wiki/www.mpqc.org). Use this to make Libint and IntV3 engines in MPQC interoperable.
-  * `gamess` — [GAMESS](http://www.msg.ameslab.gov/gamess/) ordering (xxx, yyy, zzz, xxy, xxz, yyx, yyz, zzx, zzy, xyz)
-  * `orca` — [ORCA](http://cec.mpg.de/forum/) ordering (hydrid between GAMESS and standard)
-  * `bagel` — [BAGEL](https://github.com/evaleev/libint/wiki/nubakery.org) axis-permuted version of intv3 (xxx, xxy, xyy, yyy, xxz, xyz, yyz, xzz, yzz, zzz)
-* `LIBINT2_SHELL_SET` — G — Support computation of shell sets sets subject to these restrictions. [Default=standard]
-  * `standard` — standard ordering:
+* `LIBINT2_CARTGAUSS_ORDERING` - G - Orderings for shells of cartesian Gaussians. [Default=standard]
+  * `standard` - standard ordering (xxx, xxy, xxz, xyy, xyz, xzz, yyy, ...) This is ordering of the Common Component Architecture (CCA) standard for molecular integral data exchange described in ["Components for Integral Evaluation in Quantum Chemistry", J. P. Kenny, C. L. Janssen, E. F. Valeev, and T. L. Windus, J. Comp. Chem. 29, 562 (2008)](http://dx.doi.org/10.1002/jcc.20815).
+  * `intv3` - intv3 ordering (yyy, yyz, yzz, zzz, xyy, xyz, xzz, xxy, xxz, xxx) This is used by IntV3, the default integral engine of [MPQC](https://github.com/evaleev/libint/wiki/www.mpqc.org). Use this to make Libint and IntV3 engines in MPQC interoperable.
+  * `gamess` - [GAMESS](http://www.msg.ameslab.gov/gamess/) ordering (xxx, yyy, zzz, xxy, xxz, yyx, yyz, zzx, zzy, xyz)
+  * `orca` - [ORCA](http://cec.mpg.de/forum/) ordering (hydrid between GAMESS and standard)
+  * `bagel` - [BAGEL](https://github.com/evaleev/libint/wiki/nubakery.org) axis-permuted version of intv3 (xxx, xxy, xyy, yyy, xxz, xyz, yyz, xzz, yzz, zzz)
+* `LIBINT2_SHELL_SET` - G - Support computation of shell sets sets subject to these restrictions. [Default=standard]
+  * `standard` - standard ordering:
       for (ab|cd):
         l(a) >= l(b),
         l(c) >= l(d),
         l(a)+l(b) <= l(c)+l(d)
       for (b|cd):
         l(c) >= l(d)
-  * `orca` — ORCA ordering:
+  * `orca` - ORCA ordering:
       for (ab|cd):
         l(a) <= l(b),
         l(c) <= l(d),
@@ -228,30 +228,30 @@ Note that options, docs, and CMake components are focused on the C++ interface, 
       "CMake Error: Generator: execution of make failed". Throttle it to physical threads with
       `export CMAKE_BUILD_PARALLEL_LEVEL=N`.
 
-* `WITH_MAX_AM` — G — Support Gaussians of angular momentum up to N. Can specify values for each derivative level as a semicolon-separated string. Specify values greater or equal to `WITH_<class>_MAX_AM`; often mirrors `WITH_ERI3_MAX_AM`. [Default=4]
-* `WITH_OPT_AM` — G — Optimize maximally for up to angular momentum N (N <= WITH_MAX_AM). Can specify values for each derivative level as a semicolon-separated string. [Default=-1 -> `(WITH_MAX_AM/2)+1`]
+* `WITH_MAX_AM` - G - Support Gaussians of angular momentum up to N. If ERI3 ints are enabled, specifing values for each derivative level as a semicolon-separated string also controls the AM of the paired centers. [Default=4]
+* `WITH_OPT_AM` - G - Optimize maximally for up to angular momentum N (N <= WITH_MAX_AM). Can specify values for each derivative level as a semicolon-separated string. [Default=-1 -> `(WITH_MAX_AM/2)+1`]
 
-* `MULTIPOLE_MAX_ORDER` — G — Maximum order of spherical multipole integrals. There is no maximum. [Default=4]
+* `MULTIPOLE_MAX_ORDER` - G - Maximum order of spherical multipole integrals. There is no maximum. [Default=4]
 
-* `WITH_ONEBODY_MAX_AM` — G — Support 1-body ints for Gaussians of angular momentum up to N. Can specify values for each derivative level as a semicolon-separated string. [Default=-1 -> `WITH_MAX_AM`]
-* `WITH_ONEBODY_OPT_AM` — G — Optimize 1-body ints maximally for up to angular momentum N (N <= max-am). Can specify values for each derivative level as a semicolon-separated string. [Default=-1 -> `WITH_OPT_AM`]
+* `WITH_ONEBODY_MAX_AM` - G - Support 1-body ints for Gaussians of angular momentum up to N. Can specify values for each derivative level as a semicolon-separated string. [Default=-1 -> `WITH_MAX_AM`]
+* `WITH_ONEBODY_OPT_AM` - G - Optimize 1-body ints maximally for up to angular momentum N (N <= max-am). Can specify values for each derivative level as a semicolon-separated string. [Default=-1 -> `WITH_OPT_AM`]
 
-* `WITH_ERI_MAX_AM` — G — Support 4-center ERIs for Gaussians of angular momentum up to N. Can specify values for each derivative level as a semicolon-separated string. [Default=-1 -> `WITH_MAX_AM`]
-* `WITH_ERI_OPT_AM` — G — Optimize 4-center ERIs maximally for up to angular momentum N (N <= max-am). Can specify values for each derivative level as a semicolon-separated string. [Default=-1 -> `WITH_OPT_AM`]
+* `WITH_ERI_MAX_AM` - G - Support 4-center ERIs for Gaussians of angular momentum up to N. Can specify values for each derivative level as a semicolon-separated string. [Default=-1 -> `WITH_MAX_AM`]
+* `WITH_ERI_OPT_AM` - G - Optimize 4-center ERIs maximally for up to angular momentum N (N <= max-am). Can specify values for each derivative level as a semicolon-separated string. [Default=-1 -> `WITH_OPT_AM`]
 
-* `WITH_ERI3_MAX_AM` — G — Support 3-center ERIs for Gaussians of angular momentum up to N. Can specify values for each derivative level as a semicolon-separated string. This option controls only the single fitting center; the paired centers use WITH_MAX_AM. [Default=-1 -> `WITH_MAX_AM`]
-* `WITH_ERI3_OPT_AM` — G — Optimize 3-center ERIs maximally for up to angular momentum N (N <= max-am). Can specify values for each derivative level as a semicolon-separated string. [Default=-1 -> `WITH_OPT_AM`]
-* `ERI3_PURE_SH` — G — Assume the 'unpaired' center of 3-center ERIs will be transformed to pure solid harmonics. [Default=OFF]
+* `WITH_ERI3_MAX_AM` - G - Support 3-center ERIs for Gaussians of angular momentum up to N. Can specify values for each derivative level as a semicolon-separated string. This option controls only the single fitting center; the paired centers use WITH_MAX_AM. [Default=-1 -> `WITH_MAX_AM`]
+* `WITH_ERI3_OPT_AM` - G - Optimize 3-center ERIs maximally for up to angular momentum N (N <= max-am). Can specify values for each derivative level as a semicolon-separated string. [Default=-1 -> `WITH_OPT_AM`]
+* `ERI3_PURE_SH` - G - Assume the 'unpaired' center of 3-center ERIs will be transformed to pure solid harmonics. [Default=OFF]
 
-* `WITH_ERI2_MAX_AM` — G — Support 2-center ERIs for Gaussians of angular momentum up to N. Can specify values for each derivative level as a semicolon-separated string. [Default=-1 -> `WITH_MAX_AM`]
-* `WITH_ERI2_OPT_AM` — G — Optimize 2-center ERIs maximally for up to angular momentum N (N <= max-am). Can specify values for each derivative level as a semicolon-separated string. [Default=-1 -> `WITH_OPT_AM`]
-* `ERI2_PURE_SH` — G — Assume the 2-center ERIs will be transformed to pure solid harmonics. [Default=OFF]
+* `WITH_ERI2_MAX_AM` - G - Support 2-center ERIs for Gaussians of angular momentum up to N. Can specify values for each derivative level as a semicolon-separated string. [Default=-1 -> `WITH_MAX_AM`]
+* `WITH_ERI2_OPT_AM` - G - Optimize 2-center ERIs maximally for up to angular momentum N (N <= max-am). Can specify values for each derivative level as a semicolon-separated string. [Default=-1 -> `WITH_OPT_AM`]
+* `ERI2_PURE_SH` - G - Assume the 2-center ERIs will be transformed to pure solid harmonics. [Default=OFF]
 
-* `WITH_G12_MAX_AM` — G — Support integrals for G12 methods of angular momentum up to N. No specification with per-derivative list. [Default=-1 -> `WITH_MAX_AM`]
-* `WITH_G12_OPT_AM` — G — Optimize G12 integrals for up to angular momentum N (N <= max-am). No specification with per-derivative list. [Default=-1 `WITH_OPT_AM`]
+* `WITH_G12_MAX_AM` - G - Support integrals for G12 methods of angular momentum up to N. No specification with per-derivative list. [Default=-1 -> `WITH_MAX_AM`]
+* `WITH_G12_OPT_AM` - G - Optimize G12 integrals for up to angular momentum N (N <= max-am). No specification with per-derivative list. [Default=-1 `WITH_OPT_AM`]
 
-* `WITH_G12DKH_MAX_AM` — G — Support integrals for relativistic G12 methods of angular momentum up to N. No specification with per-derivative list. [Default=-1 -> `WITH_MAX_AM`]
-* `WITH_G12DKH_OPT_AM` — G — Optimize G12DKH integrals for up to angular momentum N (N <= max-am). No specification with per-derivative list. [Default=-1 `WITH_OPT_AM`]
+* `WITH_G12DKH_MAX_AM` - G - Support integrals for relativistic G12 methods of angular momentum up to N. No specification with per-derivative list. [Default=-1 -> `WITH_MAX_AM`]
+* `WITH_G12DKH_OPT_AM` - G - Optimize G12DKH integrals for up to angular momentum N (N <= max-am). No specification with per-derivative list. [Default=-1 `WITH_OPT_AM`]
 
 
 ### Compilers and Flags (G L) (TARBALL)
@@ -259,9 +259,9 @@ Note that options, docs, and CMake components are focused on the C++ interface, 
 
 ### Build Library What (L) (TARBALL)
 
-* `LIBINT2_ENABLE_MPFR` — L — Use MPFR library to test Libint integrals in high precision (requires MPFR; experts only). [Default=OFF]
-* `LIBINT2_LOCAL_Eigen3_INSTALL` — L — Install an exported target with hard-coded Eigen3 dependency paths. This is potentially useful and important when consuming the compiled C++11 interface library so that the Libint library build and Libint consumer build use the same Eigen3 installation & ABI. This is at most a convenience when consuming the header-only C++11 interface library. See `LIBINT2_LOCAL_Eigen3_FIND`. [Default=OFF]
-* `LIBINT2_ENABLE_PYTHON` — L — Build Python bindings (requires Python and Eigen3; Boost and pybind11 recommended; [see prereq line](#prerequisites)). Can instead be enabled and built through separate CMake configuration after library build. [Default=OFF]
+* `LIBINT2_ENABLE_MPFR` - L - Use MPFR library to test Libint integrals in high precision (requires MPFR; experts only). [Default=OFF]
+* `LIBINT2_LOCAL_Eigen3_INSTALL` - L - Install an exported target with hard-coded Eigen3 dependency paths. This is potentially useful and important when consuming the compiled C++11 interface library so that the Libint library build and Libint consumer build use the same Eigen3 installation & ABI. This is at most a convenience when consuming the header-only C++11 interface library. See `LIBINT2_LOCAL_Eigen3_FIND`. [Default=OFF]
+* `LIBINT2_ENABLE_PYTHON` - L - Build Python bindings (requires Python and Eigen3; Boost and pybind11 recommended; [see prereq line](#prerequisites)). Can instead be enabled and built through separate CMake configuration after library build. [Default=OFF]
 
 
 ### Build Library How (G L) (TARBALL)
@@ -270,16 +270,16 @@ Note that options, docs, and CMake components are focused on the C++ interface, 
 
 ### Detecting Dependencies (G L C) (TARBALL)
 
-* `Python_EXECUTABLE` — L — Path to Python interpreter.
-* `CMAKE_PREFIX_PATH` — G L — Set to list of root directories to look for external dependencies. [Standard CMake variable](https://cmake.org/cmake/help/latest/variable/CMAKE_PREFIX_PATH.html)
-* `BOOST_ROOT` — G L C — Prefix to installation location (`BOOST_ROOT/include/boost/` exists)
+* `Python_EXECUTABLE` - L - Path to Python interpreter.
+* `CMAKE_PREFIX_PATH` - G L - Set to list of root directories to look for external dependencies. [Standard CMake variable](https://cmake.org/cmake/help/latest/variable/CMAKE_PREFIX_PATH.html)
+* `BOOST_ROOT` - G L C - Prefix to installation location (`BOOST_ROOT/include/boost/` exists)
 * `Boost_DIR` - G L C - Path to installation location of Boost's config file (`Boost_DIR/BoostConfig.cmake` exists)
-* `CMAKE_DISABLE_FIND_PACKAGE_Boost` — L — When Boost required for C++11 Libint API, disable its detection, thereby forcing use of bundled Boost. Note that this (and other Boost-hinting variables) can affect what is installed [see here](#packagers). [Standard CMake variable](https://cmake.org/cmake/help/latest/variable/CMAKE_DISABLE_FIND_PACKAGE_PackageName.html). [Default=OFF]
-* `Eigen3_ROOT` — L C — Prefix to installation location (`Eigen3_ROOT/include/eigen3/Eigen/Core` exists)
-* `EIGEN3_INCLUDE_DIR` — L C — Path to installation location of Eigen's header files (`EIGEN3_INCLUDE_DIR/include/eigen3` exists)
-* `Eigen3_DIR` – L C – Path to installation location of Eigen's config file (`Eigen3_DIR/Eigen3Config.cmake` exists)
-* `Multiprecision_ROOT` — G L — Prefix to installation location (`Multiprecision_ROOT/` contains headers like gmp.h, gmpxx.h, mpfr.h)
-* `LIBINT2_LOCAL_Eigen3_FIND` — C — Set to `ON` before `find_package(Libint2)` to load the Eigen3 target exported by `LIBINT2_LOCAL_Eigen3_INSTALL=ON` if Libint library built locally. [Default=OFF]
+* `CMAKE_DISABLE_FIND_PACKAGE_Boost` - L - When Boost required for C++11 Libint API, disable its detection, thereby forcing use of bundled Boost. Note that this (and other Boost-hinting variables) can affect what is installed [see here](#packagers). [Standard CMake variable](https://cmake.org/cmake/help/latest/variable/CMAKE_DISABLE_FIND_PACKAGE_PackageName.html). [Default=OFF]
+* `Eigen3_ROOT` - L C - Prefix to installation location (`Eigen3_ROOT/include/eigen3/Eigen/Core` exists)
+* `EIGEN3_INCLUDE_DIR` - L C - Path to installation location of Eigen's header files (`EIGEN3_INCLUDE_DIR/include/eigen3` exists)
+* `Eigen3_DIR` - L C - Path to installation location of Eigen's config file (`Eigen3_DIR/Eigen3Config.cmake` exists)
+* `Multiprecision_ROOT` - G L - Prefix to installation location (`Multiprecision_ROOT/` contains headers like gmp.h, gmpxx.h, mpfr.h)
+* `LIBINT2_LOCAL_Eigen3_FIND` - C - Set to `ON` before `find_package(Libint2)` to load the Eigen3 target exported by `LIBINT2_LOCAL_Eigen3_INSTALL=ON` if Libint library built locally. [Default=OFF]
 
 * Hint dependency locations all at the same installation prefix:
 
@@ -315,12 +315,12 @@ Note that options, docs, and CMake components are focused on the C++ interface, 
 
 ### Install Paths (L) (TARBALL)
 
-* `LIBINT2_PREFIX_PYTHON_INSTALL` — L — For `LIBINT2_ENABLE_PYTHON=ON`, whether to install the Python module in the Linux manner to `CMAKE_INSTALL_PREFIX` or to not install it. Note: not a path; the installation sub-path below `CMAKE_INSTALL_PREFIX` is determined by querying `Python_EXECUTABLE`. For alternate installation in the Python manner to `Python_EXECUTABLE`'s site-packages, see target libint2-python-wheel. [Default=OFF]
+* `LIBINT2_PREFIX_PYTHON_INSTALL` - L - For `LIBINT2_ENABLE_PYTHON=ON`, whether to install the Python module in the Linux manner to `CMAKE_INSTALL_PREFIX` or to not install it. Note: not a path; the installation sub-path below `CMAKE_INSTALL_PREFIX` is determined by querying `Python_EXECUTABLE`. For alternate installation in the Python manner to `Python_EXECUTABLE`'s site-packages, see target libint2-python-wheel. [Default=OFF]
 
 
 ### Miscellaneous (G L)
 
-* `LIBINT2_REALTYPE` — L — Specifies the floating-point data type used by the library. [Default=double]
+* `LIBINT2_REALTYPE` - L - Specifies the floating-point data type used by the library. [Default=double]
   By overriding the default it is possible to customize the library to use a lower-precision representation (which typically results in a performance boost) and/or to generate [SIMD](http://en.wikipedia.org/wiki/SIMD) vectorized code. *N.B. C++11 interface cannot be currently used with SIMD vectorized libraries!* The following values are valid:
   * `double` -- double-precision floating-point representation of a real number;
   * `float` -- single-precision floating-point number;
@@ -334,21 +334,21 @@ Note that options, docs, and CMake components are focused on the C++ interface, 
 
   **N.B.** It is also possible to use real vector types of [Agner Fog's vectorclass library](http://www.agner.org/optimize/#vectorclass), e.g. `Vec4d` and `Vec8f` for AVX. To use this library you need to add this to CPPFLAGS or CXXFLAGS: `-Ipath_to_vectorclass -DLIBINT2_HAVE_AGNER_VECTORCLASS` . On macOS, we only succeeded in using this library with a recent GNU C++ compiler, not with Clang. Not tested after CMake rework.
 
-* `LIBINT_USER_DEFINED_REAL_INCLUDES` — L — Additional #includes necessary to use the real type. [Defaults=none]
-* `LIBINT_CONTRACTED_INTS` — G — Turn on support for contracted integrals. [Default=ON]
-* `LIBINT_ERI_STRATEGY` — G — Compute ERIs using the following strategy (experts only). (0 for OS, 1 for HGP, 2 for HL). [Default=1]
-* `LIBINT_USE_COMPOSITE_EVALUATORS` — G — Libint will use composite evaluators (i.e. every evaluator will compute one integral type only). [Default=ON]
-* `LIBINT_SINGLE_EVALTYPE` — G — Generate single evaluator type (i.e. all tasks use the same evaluator). OFF is NYI [Default=ON]
-* `LIBINT_ENABLE_UNROLLING` — G — Unroll shell sets into integrals (will unroll shell sets larger than N) (0 for never, N for N, 1000000000 for always). [Default=100]
-* `LIBINT_ALIGN_SIZE` — G — If posix_memalign is available, this will specify alignment of Libint data, in units of sizeof(LIBINT2_REALTYPE). Default is to use built-in heuristics: system-determined for vectorization off (default) or veclen * sizeof(LIBINT2_REALTYPE) for vectorization on. (experts only). [Default=0]
-* `LIBINT_GENERATE_FMA` — G — Generate FMA (fused multiply-add) instructions (to benefit must have FMA-capable hardware and compiler). [Default=OFF]
-* `LIBINT_ENABLE_GENERIC_CODE` — G — Use manually-written generic code. [Default=OFF]
-* `LIBINT_API_PREFIX` — G — Prepend this string to every name in the library API (except for the types). [Default=OFF]
-* `LIBINT_VECTOR_LENGTH` — G — Compute integrals in vectors of length N. [Default=OFF]
-* `LIBINT_VECTOR_METHOD` — G — Specifies how to vectorize integrals. Irrelevant when `LIBINT_VECTOR_LENGTH=OFF. Allowed values are 'block' and 'line'.  [Default=block]
-* `LIBINT_ACCUM_INTS` — G — Accumulate integrals to the buffer, rather than copy (OFF for copy, ON for accum). [Default=OFF]
-* `LIBINT_FLOP_COUNT` — G — Support (approximate) FLOP counting by the library. (Generated code will require C++11!). [Default=OFF]
-* `LIBINT_PROFILE` — G — Turn on profiling instrumentation of the library. (Generated code will require C++11!). [Default=OFF]
+* `LIBINT_USER_DEFINED_REAL_INCLUDES` - L - Additional #includes necessary to use the real type. [Defaults=none]
+* `LIBINT_CONTRACTED_INTS` - G - Turn on support for contracted integrals. [Default=ON]
+* `LIBINT_ERI_STRATEGY` - G - Compute ERIs using the following strategy (experts only). (0 for OS, 1 for HGP, 2 for HL). [Default=1]
+* `LIBINT_USE_COMPOSITE_EVALUATORS` - G - Libint will use composite evaluators (i.e. every evaluator will compute one integral type only). [Default=ON]
+* `LIBINT_SINGLE_EVALTYPE` - G - Generate single evaluator type (i.e. all tasks use the same evaluator). OFF is NYI [Default=ON]
+* `LIBINT_ENABLE_UNROLLING` - G - Unroll shell sets into integrals (will unroll shell sets larger than N) (0 for never, N for N, 1000000000 for always). [Default=100]
+* `LIBINT_ALIGN_SIZE` - G - If posix_memalign is available, this will specify alignment of Libint data, in units of sizeof(LIBINT2_REALTYPE). Default is to use built-in heuristics: system-determined for vectorization off (default) or veclen * sizeof(LIBINT2_REALTYPE) for vectorization on. (experts only). [Default=0]
+* `LIBINT_GENERATE_FMA` - G - Generate FMA (fused multiply-add) instructions (to benefit must have FMA-capable hardware and compiler). [Default=OFF]
+* `LIBINT_ENABLE_GENERIC_CODE` - G - Use manually-written generic code. [Default=OFF]
+* `LIBINT_API_PREFIX` - G - Prepend this string to every name in the library API (except for the types). [Default=OFF]
+* `LIBINT_VECTOR_LENGTH` - G - Compute integrals in vectors of length N. [Default=OFF]
+* `LIBINT_VECTOR_METHOD` - G - Specifies how to vectorize integrals. Irrelevant when `LIBINT_VECTOR_LENGTH=OFF. Allowed values are 'block' and 'line'.  [Default=block]
+* `LIBINT_ACCUM_INTS` - G - Accumulate integrals to the buffer, rather than copy (OFF for copy, ON for accum). [Default=OFF]
+* `LIBINT_FLOP_COUNT` - G - Support (approximate) FLOP counting by the library. (Generated code will require C++11!). [Default=OFF]
+* `LIBINT_PROFILE` - G - Turn on profiling instrumentation of the library. (Generated code will require C++11!). [Default=OFF]
 
 
 # GNU Autotools Update Guide
@@ -527,21 +527,21 @@ Eventually, these will be CMake Components, too.
 
 ```
    multipole_hh_dD - library includes spherical multipole integrals with max angular momentum up to
-                     "h" (h=spdfghikl...; s,p not enumerated) and derivative order "D" (D=0,1,2,...).
+                     "h" (h=spdfghikl...) and derivative order "D" (D=0,1,2,...).
                      For example, the presence of "multipole_ii_d0" means mpole ints are available for L=6.
    onebody_hh_dD   - library includes 1-body integrals with max angular momentum up to "h"
-                     (h=spdfghikl...; s,p not enumerated) and derivative order "D" (D=0,1,2,...).
+                     (h=spdfghikl...) and derivative order "D" (D=0,1,2,...).
                      For example, the presence of "onebody_ii_d1" means onebody gradient ints are
                      available for L=6.
    eri_hhhh_dD     - library includes 2-body integrals with 4 centers and max angular momentum up to
-                     "h" (h=spdfghikl...; s,p not enumerated) and derivative order "D" (D=0,1,2,...).
+                     "h" (h=spdfghikl...) and derivative order "D" (D=0,1,2,...).
                      For example, the presence of "eri_ffff_d1" means 4-center gradient ints are
                      available for L=3. That is, the library was configured with at least
                      '-D ENABLE_ERI=1 -D WITH_ERI_MAX_AM="?;>=3"'.
    eri_hhL_dD      - library includes 2-body integrals with 3 centers and max angular momentum up to
    eri_hhl_dD        Cartesian "h" for the two paired centers and Cartesian "l" or solid harmonics "L"
                      for the unpaired/fitting center, (h/l=spdfghikl..., L=SPDFGHIKL...; l>=h
-                     enumerated; s,p,S,P not enumerated) and derivative order "D" (D=0,1,2,...). The
+                     enumerated) and derivative order "D" (D=0,1,2,...). The
                      "eri_hhL_dD" component is always available when 3-center ints are present. When pure
                      solid harmonics are assumed for 3-center ints, "eri_hhl_dD" will *not be available*.
                      For example, the presence of "eri_ffG_d0" means 3-center energy ints are
@@ -559,7 +559,7 @@ Eventually, these will be CMake Components, too.
                      '-D ENABLE_ERI2=2 -D WITH_ERI2_MAX_AM="?;?;>=3"'. The presence of "eri_ff_d2" means the
                      library configuration did not additionally include "-D ERI2_PURE_SH=ON".
    g12_hhhh_dD     - library includes F12 integrals with Gaussian factors and max angular momentum up to
-                     "h" (h=spdfghikl...; s,p not enumerated) and derivative order "D" (D=0,1,2,...).
+                     "h" (h=spdfghikl...) and derivative order "D" (D=0,1,2,...).
                      For example, the presence of "g12_iiii_d2" means g12 Hessian ints are available for L=6.
 
                                         cart       shell_set   used_by
@@ -578,20 +578,20 @@ Eventually, these will be CMake Components, too.
 
 ### Interfacing
 
-Eventually (approximately 2.9.0 CMake-based), additional functions will be available to retrive Libint version, commit, and literature citation. Below are outputs at the libtool stage.
+Eventually (approximately 2.10.0 CMake-based), additional functions will be available to retrive Libint version, commit, and literature citation. Below are outputs at the libtool stage.
 
 ```
 auto Mmp = libint2::libint_version();
 printf("Version: Numeric=%s Sortable=%s Commit=%s\n", libint2::libint_version_string(false).c_str(), libint2::libint_version_string(true).c_str(), libint2::libint_commit().c_str());
 printf("Version: Major=%d minor=%d patch=%d\n", std::get<0>(Mmp), std::get<1>(Mmp), std::get<2>(Mmp));
 printf("Citation: DOI=%s Ref=%s\n", libint2::libint_reference_doi().c_str(), libint2::libint_reference().c_str());
-printf("Citation: BibTex=%s\n", libint2::libint_bibtex().c_str());
+printf("Citation: BibTeX=%s\n", libint2::libint_bibtex().c_str());
 ```
 ```
 Version: Numeric=2.8.0 Sortable= Commit=
 Version: Major=2 minor=8 patch=0
 Citation: DOI= Ref=Libint: , Version  Edward F. Valeev, http://libint.valeyev.net/
-Citation: BibTex=@Misc{Libint2,
+Citation: BibTeX=@Misc{Libint2,
   author = {E.~F.~Valeev},
   title = {\textsc{Libint}: },
   howpublished = {http://libint.valeyev.net/},

@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2004-2023 Edward F. Valeev
+ *  Copyright (C) 2004-2024 Edward F. Valeev
  *
  *  This file is part of Libint.
  *
@@ -341,6 +341,9 @@
 #ifndef LIBINT_MAYBE_UNUSED  // fallback
 #define LIBINT_MAYBE_UNUSED
 #endif
+
+/* maps angular momentum to the corresponding symbol: 0 -> s, 1 -> p, etc. */
+#define LIBINT_AM2SYMBOL "spdfghiklmnoqrtuvwxyz"
 
 #if @_EXPORT_MODE@
 #include "libint2/config2.h"

@@ -1,22 +1,22 @@
 /*
- *  Copyright (C) 2004-2021 Edward F. Valeev
- *
- *  This file is part of Libint.
- *
- *  Libint is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU Lesser General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  Libint is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with Libint.  If not, see <http://www.gnu.org/licenses/>.
- *
- */
+*  Copyright (C) 2004-2024 Edward F. Valeev
+*
+*  This file is part of Libint library.
+*
+*  Libint library is free software: you can redistribute it and/or modify
+*  it under the terms of the GNU Lesser General Public License as published by
+*  the Free Software Foundation, either version 3 of the License, or
+*  (at your option) any later version.
+*
+*  Libint library is distributed in the hope that it will be useful,
+*  but WITHOUT ANY WARRANTY; without even the implied warranty of
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+*  GNU Lesser General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public License
+*  along with Libint library.  If not, see <http://www.gnu.org/licenses/>.
+*
+*/
 
 /* This file is automatically processed by configure script.
    It MUST NOT be changed manually after configuration, otherwise
@@ -46,6 +46,9 @@
 
 /* Prefix for all names in API */
 #undef LIBINT_API_PREFIX
+
+/* Max AM supported by Libint *in principle* */
+#undef LIBINT_HARD_MAX_AM
 
 /* Max AM (same for all derivatives; if not defined see LIBINT_MAX_AM_LIST) */
 #undef LIBINT_MAX_AM
@@ -323,5 +326,8 @@
 #ifndef LIBINT_MAYBE_UNUSED  // fallback
 #define LIBINT_MAYBE_UNUSED
 #endif
+
+/* maps angular momentum to the corresponding symbol: 0 -> s, 1 -> p, etc. */
+#define LIBINT_AM2SYMBOL "spdfghiklmnoqrtuvwxyz"
 
 #endif /* header guard */

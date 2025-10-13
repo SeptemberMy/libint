@@ -1,20 +1,20 @@
 /*
- *  Copyright (C) 2004-2023 Edward F. Valeev
+ *  Copyright (C) 2004-2024 Edward F. Valeev
  *
- *  This file is part of Libint.
+ *  This file is part of Libint compiler.
  *
- *  Libint is free software: you can redistribute it and/or modify
+ *  Libint compiler is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
  *
- *  Libint is distributed in the hope that it will be useful,
+ *  Libint compiler is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with Libint.  If not, see <http://www.gnu.org/licenses/>.
+ *  along with Libint compiler.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
 
@@ -295,16 +295,6 @@ class TaskParameters {
     }
     if (max_size[am] < size) max_size[am] = size;
   }
-};
-
-/// Static parameters
-struct StaticDefinitions {
-  /// basis functions with angular momenta 0 .. 9 are represented by these
-  /// letters higher angular momenta are expressed by replacing digits in their
-  /// base-10 representation with the corresponding letters
-  static const unsigned int num_am_letters = 10;
-  /// am -> char conversion
-  static const char am_letters[num_am_letters + 1];
 };
 
 /// Converts a label, e.g. name of the target node, to the name of the function

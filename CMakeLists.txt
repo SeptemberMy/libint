@@ -111,6 +111,9 @@ option_with_default(LIBINT2_ENABLE_PYTHON
 option_with_default(LIBINT2_PREFIX_PYTHON_INSTALL
   "For LIBINT2_ENABLE_PYTHON=ON, whether to install the Python module in the Linux manner to CMAKE_INSTALL_PREFIX or to not install it. See target libint2-python-wheel for alternate installation in the Python manner to Python_EXECUTABLE's site-packages." OFF)
 
+option_with_print(LIBINT2_ENABLE_MPFR
+  "Use GNU MPFR library for high-precision testing (EXPERTS ONLY). Consumed at library build-time." OFF)
+## next one defined by `include(CTest)`
 
 #  <<<  Which Integrals Classes, Which Derivative Levels  >>>
 
@@ -273,6 +276,7 @@ option_with_print(LIBINT2_ENABLE_MPFR
 message(STATUS "Showing option BUILD_TESTING: ${BUILD_TESTING}")
 
 #  <<<  Path  >>>
+
 
 ######################## Process & Validate Options ###########################
 include(autocmake_safeguards)
