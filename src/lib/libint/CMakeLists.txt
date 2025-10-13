@@ -2,7 +2,19 @@ list(APPEND CMAKE_MODULE_PATH ${PROJECT_BINARY_DIR}/cmake/modules)
 
 include(int_computed)  # for macros.tex and features
 
-add_custom_target(libint-library-generate DEPENDS "CMakeLists.txt.export") # TODO "${EXPORT_STAGE_DIR}/src/libint2_params.h")
+# <<<  Generate Library Source  >>>
+
+file(MAKE_DIRECTORY "${EXPORT_STAGE_DIR}/src")
+add_custom_command(
+  OUTPUT
+    "${EXPORT_STAGE_DIR}/src/libint2_params.h"
+  COMMAND $<TARGET_FILE:build_libint>
+  WORKING_DIRECTORY "${EXPORT_STAGE_DIR}/src"
+  DEPENDS
+    build_libint
+  COMMENT "Generating Libint2 library source"
+  )
+add_custom_target(libint-library-generate DEPENDS "${EXPORT_STAGE_DIR}/src/libint2_params.h")
 
 # <<<  Add Metadata To The Library Source  >>>
 
@@ -47,6 +59,7 @@ add_custom_target(libint-library-export DEPENDS "${EXPORT_STAGE_DIR}.tgz")
     include(ExternalProject)
 
     list(APPEND library_CMAKE_ARGS
+        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
         -DLIBINT2_ALIGN_SIZE=${LIBINT_ALIGN_SIZE}
         -DLIBINT2_REALTYPE=${LIBINT2_REALTYPE}
         -DLIBINT2_ENABLE_MPFR=${LIBINT2_ENABLE_MPFR}
@@ -96,4 +109,3 @@ add_custom_target(libint-library-export DEPENDS "${EXPORT_STAGE_DIR}.tgz")
         -DCMAKE_C_COMPILER_ARG1:STRING=${CMAKE_C_COMPILER_ARG1}
         -DCMAKE_PREFIX_PATH:STRING=${CMAKE_PREFIX_PATH}
       )
-

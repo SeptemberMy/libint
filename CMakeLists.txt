@@ -23,6 +23,8 @@ dynamic_version(
   OUTPUT_DISTANCE LibintRepository_DISTANCE
   )
 
+set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build.")  # foil Ninja Debug on Windows
+
 project(
   Libint2Compiler
   VERSION ${LibintRepository_VERSION}
@@ -98,6 +100,8 @@ include(CTest)
 message(STATUS "Building using CMake ${CMAKE_VERSION} Generator ${CMAKE_GENERATOR}")
 
 #  <<<  General  >>>
+
+option_with_default(CMAKE_BUILD_TYPE "Build type (Release or Debug)" Release)
 
 ### compiler-only
 
@@ -178,8 +182,8 @@ option_with_default(LIBINT2_SHELL_SET
 
 option_with_default(WITH_MAX_AM
   "Support Gaussians of angular momentum up to N.
-   If ERI3 ints are enabled, specifing values for each derivative level as a
-   semicolon-separated string also controls the AM of the paired centers." 4)
+   Can specify values for each derivative level as a semicolon-separated string.
+   If ERI3 ints are enabled, this option also controls the AM of the paired centers." 4)
 option_with_default(WITH_OPT_AM
   "Optimize maximally for up to angular momentum N (N <= max-am).
    Can specify values for each derivative level as a semicolon-separated string. (default: (libint_max_am/2)+1)" -1)
@@ -266,10 +270,16 @@ option_with_print(LIBINT_FLOP_COUNT
   "Support (approximate) FLOP counting by the library. (Generated code will require C++11!)" OFF)
 option_with_print(LIBINT_PROFILE
   "Turn on profiling instrumentation of the library. (Generated code will require C++11!)" OFF)
+option_with_print(LIBINT2_ENABLE_MPFR
+  "Use GNU MPFR library for high-precision testing (EXPERTS ONLY). Consumed at library build-time." OFF)
+# next one defined by `include(CTest)`
+message(STATUS "Showing option BUILD_TESTING: ${BUILD_TESTING}")
 
+#  <<<  Path  >>>
 
 
 ######################## Process & Validate Options ###########################
+include(autocmake_safeguards)
 include(CheckFunctionExists)
 include(CheckIncludeFileCXX)
 include(FeatureSummary)
