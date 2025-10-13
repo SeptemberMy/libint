@@ -31,7 +31,7 @@ jobs:
             do_fortran: ON
           - build_type: Release
             build_shared_libs: ON
-            os: ubuntu-20.04
+            os: ubuntu-24.04
             do_fortran: ON
           - build_type: Release
             build_shared_libs: ON
@@ -173,7 +173,7 @@ jobs:
   build_export:
     # to debug the second stage, it is handy to short-circuit the first stage:
     # * suppress steps beyond "Archive Library Tarball" with "if: false"
-    # * for further reduction, run mostly Linux lanes with "os : [ ubuntu-20.04 ]"
+    # * for further reduction, run mostly Linux lanes with "os : [ ubuntu-24.04 ]"
     needs: build_repo
     if: always() && (needs.build_repo.outputs.should_skip != 'true')
     strategy:
