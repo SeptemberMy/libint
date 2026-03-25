@@ -1389,15 +1389,15 @@ inline void validate_gaussian_potential_primitive(
 ///   GaussianPotentialCentersData centers(point_charges.size());
 ///   // QM atom — point nuclear + SAP correction
 ///   centers[0] = std::make_shared<const GaussianPotentialData>(
-///       GaussianPotentialData{{infinite_exponent, 1.0}, {alpha1, c1}, {alpha2,
-///       c2}});
+///       GaussianPotentialData{{libint2::infinite_exponent, 1.0}, {alpha1, c1},
+///       {alpha2, c2}});
 ///   // QM atom — finite (Gaussian) nuclear model
 ///   auto xi = chemistry::gaussian_nuclear_exponent(Z);
 ///   centers[1] = std::make_shared<const GaussianPotentialData>(
 ///       GaussianPotentialData{{xi, 1.0}});
 ///   // MM point charge — bare Coulomb (point nuclear)
 ///   static auto pt = std::make_shared<const GaussianPotentialData>(
-///       GaussianPotentialData{{infinite_exponent, 1.0}});
+///       GaussianPotentialData{{libint2::infinite_exponent, 1.0}});
 ///   centers[2] = pt;
 ///   // Ghost atom — no potential
 ///   centers[3] = nullptr;

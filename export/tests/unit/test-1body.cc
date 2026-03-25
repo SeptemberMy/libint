@@ -696,8 +696,6 @@ TEST_CASE_METHOD(libint2::unit::DefaultFixture,
 }
 
 TEST_CASE("q_gau input validation", "[engine][1-body][validation]") {
-  using libint2::GaussianPotentialData;
-  using libint2::GaussianPotentialPrimitive;
   using libint2::infinite_exponent;
   using libint2::validate_gaussian_potential_primitive;
 
