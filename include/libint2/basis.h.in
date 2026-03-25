@@ -852,10 +852,10 @@ namespace libint2 {
 #ifndef NDEBUG
     for (size_t z = 0; z < sap_by_Z.size(); ++z) {
       for (const auto& p : sap_by_Z[z]) {
-        assert(!std::isnan(p.exponent) && p.exponent > 0.0 &&
+        assert(std::isfinite(p.exponent) && p.exponent > 0.0 &&
                "SAP basis data contains invalid exponent");
-        assert(!std::isnan(p.coefficient) &&
-               "SAP basis data contains NaN coefficient");
+        assert(std::isfinite(p.coefficient) &&
+               "SAP basis data contains non-finite coefficient");
       }
     }
 #endif
@@ -899,7 +899,7 @@ namespace libint2 {
   /// Build GaussianPotentialCentersData for erf(ω)/r model.
   inline GaussianPotentialCentersData make_q_gau_data_erf(
       double omega, const std::vector<Atom>& atoms) {
-    if (std::isnan(omega) || omega <= 0.0)
+    if (!std::isfinite(omega) || omega <= 0.0)
       throw std::invalid_argument(
           "make_q_gau_data_erf: omega must be positive and finite");
     auto data = std::make_shared<const GaussianPotentialData>(
@@ -914,7 +914,7 @@ namespace libint2 {
   /// Build GaussianPotentialCentersData for erfc(ω)/r model.
   inline GaussianPotentialCentersData make_q_gau_data_erfc(
       double omega, const std::vector<Atom>& atoms) {
-    if (std::isnan(omega) || omega <= 0.0)
+    if (!std::isfinite(omega) || omega <= 0.0)
       throw std::invalid_argument(
           "make_q_gau_data_erfc: omega must be positive and finite");
     constexpr double inf = libint2::infinite_exponent;
@@ -932,15 +932,15 @@ namespace libint2 {
   inline GaussianPotentialCentersData make_q_gau_data_erfx(
       double omega, double lambda, double sigma,
       const std::vector<Atom>& atoms) {
-    if (std::isnan(omega) || omega <= 0.0)
+    if (!std::isfinite(omega) || omega <= 0.0)
       throw std::invalid_argument(
           "make_q_gau_data_erfx: omega must be positive and finite");
-    if (std::isnan(lambda))
+    if (!std::isfinite(lambda))
       throw std::invalid_argument(
-          "make_q_gau_data_erfx: lambda must not be NaN");
-    if (std::isnan(sigma))
+          "make_q_gau_data_erfx: lambda must be finite");
+    if (!std::isfinite(sigma))
       throw std::invalid_argument(
-          "make_q_gau_data_erfx: sigma must not be NaN");
+          "make_q_gau_data_erfx: sigma must be finite");
     constexpr double inf = libint2::infinite_exponent;
     auto data = std::make_shared<const GaussianPotentialData>(
         GaussianPotentialData{{inf, sigma},

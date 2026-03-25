@@ -1355,20 +1355,22 @@ struct GaussianPotentialPrimitive {
 using GaussianPotentialData = std::vector<GaussianPotentialPrimitive>;
 
 /// Validates a GaussianPotentialPrimitive.
-/// @throws std::invalid_argument if exponent is NaN or negative-finite,
-///         or if coefficient is NaN
+/// @throws std::invalid_argument if exponent is NaN or negative (including
+///         -infinity), or if coefficient is non-finite (NaN or +/-infinity).
+///         Only +infinity (i.e. libint2::infinite_exponent) is accepted as a
+///         non-finite exponent.
 inline void validate_gaussian_potential_primitive(
     const GaussianPotentialPrimitive& prim) {
   using std::isfinite;
   using std::isnan;
   if (isnan(prim.exponent))
     throw std::invalid_argument("GaussianPotentialPrimitive: exponent is NaN");
-  if (isfinite(prim.exponent) && prim.exponent < 0.0)
+  if (prim.exponent < 0.0)
     throw std::invalid_argument(
         "GaussianPotentialPrimitive: exponent is negative");
-  if (isnan(prim.coefficient))
+  if (!isfinite(prim.coefficient))
     throw std::invalid_argument(
-        "GaussianPotentialPrimitive: coefficient is NaN");
+        "GaussianPotentialPrimitive: coefficient is not finite");
 }
 
 /// Gaussian potential data per center, parallel to the point-charges vector

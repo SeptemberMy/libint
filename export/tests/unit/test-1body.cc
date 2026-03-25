@@ -721,15 +721,28 @@ TEST_CASE("q_gau input validation", "[engine][1-body][validation]") {
                       std::invalid_argument);
   }
 
-  SECTION("NaN coefficient throws") {
+  SECTION("negative infinity exponent throws") {
     REQUIRE_THROWS_AS(validate_gaussian_potential_primitive(
-                          {1.0, std::numeric_limits<double>::quiet_NaN()}),
+                          {-std::numeric_limits<double>::infinity(), 1.0}),
                       std::invalid_argument);
   }
 
-  SECTION("infinite_exponent equals IEEE 754 infinity") {
+  SECTION("non-finite coefficient throws") {
+    REQUIRE_THROWS_AS(validate_gaussian_potential_primitive(
+                          {1.0, std::numeric_limits<double>::quiet_NaN()}),
+                      std::invalid_argument);
+    REQUIRE_THROWS_AS(validate_gaussian_potential_primitive(
+                          {1.0, std::numeric_limits<double>::infinity()}),
+                      std::invalid_argument);
+    REQUIRE_THROWS_AS(validate_gaussian_potential_primitive(
+                          {1.0, -std::numeric_limits<double>::infinity()}),
+                      std::invalid_argument);
+  }
+
+  SECTION("infinite_exponent equals IEEE 754 positive infinity") {
     REQUIRE(infinite_exponent == std::numeric_limits<double>::infinity());
     REQUIRE(std::isinf(infinite_exponent));
+    REQUIRE(infinite_exponent > 0.0);
   }
 }
 
@@ -745,10 +758,13 @@ TEST_CASE("make_q_gau_data factory validation",
                       std::invalid_argument);
   }
 
-  SECTION("make_q_gau_data_erf rejects non-positive omega") {
+  SECTION("make_q_gau_data_erf rejects non-positive or non-finite omega") {
     REQUIRE_THROWS_AS(libint2::make_q_gau_data_erf(0.0, atoms),
                       std::invalid_argument);
     REQUIRE_THROWS_AS(libint2::make_q_gau_data_erf(-1.0, atoms),
+                      std::invalid_argument);
+    REQUIRE_THROWS_AS(libint2::make_q_gau_data_erf(
+                          std::numeric_limits<double>::infinity(), atoms),
                       std::invalid_argument);
   }
 
@@ -766,12 +782,24 @@ TEST_CASE("make_q_gau_data factory validation",
                                       0.3, 0.7, atoms),
         std::invalid_argument);
     REQUIRE_THROWS_AS(
+        libint2::make_q_gau_data_erfx(std::numeric_limits<double>::infinity(),
+                                      0.3, 0.7, atoms),
+        std::invalid_argument);
+    REQUIRE_THROWS_AS(
         libint2::make_q_gau_data_erfx(
             0.5, std::numeric_limits<double>::quiet_NaN(), 0.7, atoms),
         std::invalid_argument);
     REQUIRE_THROWS_AS(
         libint2::make_q_gau_data_erfx(
+            0.5, std::numeric_limits<double>::infinity(), 0.7, atoms),
+        std::invalid_argument);
+    REQUIRE_THROWS_AS(
+        libint2::make_q_gau_data_erfx(
             0.5, 0.3, std::numeric_limits<double>::quiet_NaN(), atoms),
+        std::invalid_argument);
+    REQUIRE_THROWS_AS(
+        libint2::make_q_gau_data_erfx(
+            0.5, 0.3, std::numeric_limits<double>::infinity(), atoms),
         std::invalid_argument);
   }
 

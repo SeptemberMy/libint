@@ -2198,13 +2198,14 @@ struct q_gau_gm_eval : private detail::CoreEvalScratch<q_gau_gm_eval<Real>> {
 
 #ifndef NDEBUG
     for (const auto& prim : primitives) {
+      using std::isfinite;
       using std::isnan;
       assert(!isnan(prim.exponent) &&
              "q_gau_gm_eval: primitive exponent is NaN");
-      assert(!isnan(prim.coefficient) &&
-             "q_gau_gm_eval: primitive coefficient is NaN");
-      assert((isinf(prim.exponent) || prim.exponent >= 0.0) &&
+      assert(prim.exponent >= 0.0 &&
              "q_gau_gm_eval: primitive exponent is negative");
+      assert(isfinite(prim.coefficient) &&
+             "q_gau_gm_eval: primitive coefficient is not finite");
     }
 #endif
 
