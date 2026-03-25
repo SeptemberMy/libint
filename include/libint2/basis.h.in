@@ -849,16 +849,16 @@ namespace libint2 {
     auto file = basis_lib_path + PATH_SEPARATOR + canonical_name + ".g94";
     auto sap_by_Z = read_sap_basis_library(file);
 
-#ifndef NDEBUG
     for (size_t z = 0; z < sap_by_Z.size(); ++z) {
       for (const auto& p : sap_by_Z[z]) {
-        assert(std::isfinite(p.exponent) && p.exponent > 0.0 &&
-               "SAP basis data contains invalid exponent");
-        assert(std::isfinite(p.coefficient) &&
-               "SAP basis data contains non-finite coefficient");
+        if (!std::isfinite(p.exponent) || p.exponent <= 0.0)
+          throw std::invalid_argument(
+              "make_q_gau_data: SAP basis contains invalid exponent");
+        if (!std::isfinite(p.coefficient))
+          throw std::invalid_argument(
+              "make_q_gau_data: SAP basis contains non-finite coefficient");
       }
     }
-#endif
 
     std::map<int, std::shared_ptr<const GaussianPotentialData>> cache;
     GaussianPotentialCentersData result;
@@ -928,7 +928,8 @@ namespace libint2 {
   }
 
   /// Build GaussianPotentialCentersData for erfx(ω,λ,σ)/r model.
-  /// Computes (λ·erf(ωr) + σ·erfc(ωr))/r = σ/r - (σ-λ)·erf(ωr)/r
+  /// Computes (λ·erf(ωr) + σ·erfc(ωr))/r = σ/r - (σ-λ)·erf(ωr)/r.
+  /// Zero is valid for lambda (pure erfc) and sigma (pure -erf).
   inline GaussianPotentialCentersData make_q_gau_data_erfx(
       double omega, double lambda, double sigma,
       const std::vector<Atom>& atoms) {

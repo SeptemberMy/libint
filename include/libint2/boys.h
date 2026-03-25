@@ -2187,6 +2187,7 @@ struct q_gau_gm_eval : private detail::CoreEvalScratch<q_gau_gm_eval<Real>> {
   void operator()(Real* Gm, Real rho, Real T, int mmax,
                   const PrimitivesContainer& primitives) {
     using std::isinf;
+    using std::isnan;
     using std::sqrt;
 
     if (primitives.empty()) {
@@ -2196,20 +2197,14 @@ struct q_gau_gm_eval : private detail::CoreEvalScratch<q_gau_gm_eval<Real>> {
 
     std::fill(Gm, Gm + mmax + 1, Real{0});
 
-#ifndef NDEBUG
     for (const auto& prim : primitives) {
-      using std::isfinite;
-      using std::isnan;
       assert(!isnan(prim.exponent) &&
              "q_gau_gm_eval: primitive exponent is NaN");
       assert(prim.exponent >= 0.0 &&
              "q_gau_gm_eval: primitive exponent is negative");
-      assert(isfinite(prim.coefficient) &&
+      assert(std::isfinite(static_cast<double>(prim.coefficient)) &&
              "q_gau_gm_eval: primitive coefficient is not finite");
-    }
-#endif
 
-    for (const auto& prim : primitives) {
       if (isinf(prim.exponent)) {
         // α = ∞ => (∞/(∞+ρ)) = 1, contributes c_i * F_m(T)
         fm_eval_->eval(&base_type::Fm_[0], T, mmax);
