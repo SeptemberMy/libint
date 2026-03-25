@@ -801,7 +801,7 @@ namespace libint2 {
   /// @param[in] atoms the atoms
   inline GaussianPotentialCentersData make_q_gau_data(
       NuclearModel model, const std::vector<Atom>& atoms) {
-    constexpr double inf = std::numeric_limits<double>::infinity();
+    constexpr double inf = libint2::infinite_exponent;
     std::map<int, std::shared_ptr<const GaussianPotentialData>> cache;
     GaussianPotentialCentersData result;
     result.reserve(atoms.size());
@@ -837,7 +837,7 @@ namespace libint2 {
   inline GaussianPotentialCentersData make_q_gau_data(
       NuclearModel model, const std::vector<Atom>& atoms,
       const std::string& sap_basis_name) {
-    constexpr double inf = std::numeric_limits<double>::infinity();
+    constexpr double inf = libint2::infinite_exponent;
     std::string basis_lib_path = basis_data_path();
     std::string canonical_name = sap_basis_name;
     std::transform(sap_basis_name.begin(), sap_basis_name.end(),
@@ -848,6 +848,17 @@ namespace libint2 {
                    });
     auto file = basis_lib_path + PATH_SEPARATOR + canonical_name + ".g94";
     auto sap_by_Z = read_sap_basis_library(file);
+
+#ifndef NDEBUG
+    for (size_t z = 0; z < sap_by_Z.size(); ++z) {
+      for (const auto& p : sap_by_Z[z]) {
+        assert(!std::isnan(p.exponent) && p.exponent > 0.0 &&
+               "SAP basis data contains invalid exponent");
+        assert(!std::isnan(p.coefficient) &&
+               "SAP basis data contains NaN coefficient");
+      }
+    }
+#endif
 
     std::map<int, std::shared_ptr<const GaussianPotentialData>> cache;
     GaussianPotentialCentersData result;
@@ -888,6 +899,9 @@ namespace libint2 {
   /// Build GaussianPotentialCentersData for erf(ω)/r model.
   inline GaussianPotentialCentersData make_q_gau_data_erf(
       double omega, const std::vector<Atom>& atoms) {
+    if (std::isnan(omega) || omega <= 0.0)
+      throw std::invalid_argument(
+          "make_q_gau_data_erf: omega must be positive and finite");
     auto data = std::make_shared<const GaussianPotentialData>(
         GaussianPotentialData{{omega * omega, 1.0}});
     GaussianPotentialCentersData result;
@@ -900,7 +914,10 @@ namespace libint2 {
   /// Build GaussianPotentialCentersData for erfc(ω)/r model.
   inline GaussianPotentialCentersData make_q_gau_data_erfc(
       double omega, const std::vector<Atom>& atoms) {
-    constexpr double inf = std::numeric_limits<double>::infinity();
+    if (std::isnan(omega) || omega <= 0.0)
+      throw std::invalid_argument(
+          "make_q_gau_data_erfc: omega must be positive and finite");
+    constexpr double inf = libint2::infinite_exponent;
     auto data = std::make_shared<const GaussianPotentialData>(
         GaussianPotentialData{{inf, 1.0}, {omega * omega, -1.0}});
     GaussianPotentialCentersData result;
@@ -915,7 +932,16 @@ namespace libint2 {
   inline GaussianPotentialCentersData make_q_gau_data_erfx(
       double omega, double lambda, double sigma,
       const std::vector<Atom>& atoms) {
-    constexpr double inf = std::numeric_limits<double>::infinity();
+    if (std::isnan(omega) || omega <= 0.0)
+      throw std::invalid_argument(
+          "make_q_gau_data_erfx: omega must be positive and finite");
+    if (std::isnan(lambda))
+      throw std::invalid_argument(
+          "make_q_gau_data_erfx: lambda must not be NaN");
+    if (std::isnan(sigma))
+      throw std::invalid_argument(
+          "make_q_gau_data_erfx: sigma must not be NaN");
+    constexpr double inf = libint2::infinite_exponent;
     auto data = std::make_shared<const GaussianPotentialData>(
         GaussianPotentialData{{inf, sigma},
                               {omega * omega, -(sigma - lambda)}});

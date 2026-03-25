@@ -2196,6 +2196,18 @@ struct q_gau_gm_eval : private detail::CoreEvalScratch<q_gau_gm_eval<Real>> {
 
     std::fill(Gm, Gm + mmax + 1, Real{0});
 
+#ifndef NDEBUG
+    for (const auto& prim : primitives) {
+      using std::isnan;
+      assert(!isnan(prim.exponent) &&
+             "q_gau_gm_eval: primitive exponent is NaN");
+      assert(!isnan(prim.coefficient) &&
+             "q_gau_gm_eval: primitive coefficient is NaN");
+      assert((isinf(prim.exponent) || prim.exponent >= 0.0) &&
+             "q_gau_gm_eval: primitive exponent is negative");
+    }
+#endif
+
     for (const auto& prim : primitives) {
       if (isinf(prim.exponent)) {
         // α = ∞ => (∞/(∞+ρ)) = 1, contributes c_i * F_m(T)

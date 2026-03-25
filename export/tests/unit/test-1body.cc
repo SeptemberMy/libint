@@ -695,6 +695,93 @@ TEST_CASE_METHOD(libint2::unit::DefaultFixture,
 #endif
 }
 
+TEST_CASE("q_gau input validation", "[engine][1-body][validation]") {
+  using libint2::GaussianPotentialData;
+  using libint2::GaussianPotentialPrimitive;
+  using libint2::infinite_exponent;
+  using libint2::validate_gaussian_potential_primitive;
+
+  SECTION("valid primitives do not throw") {
+    REQUIRE_NOTHROW(validate_gaussian_potential_primitive({0.0, 1.0}));
+    REQUIRE_NOTHROW(validate_gaussian_potential_primitive({1.5, -0.3}));
+    REQUIRE_NOTHROW(
+        validate_gaussian_potential_primitive({infinite_exponent, 1.0}));
+    REQUIRE_NOTHROW(
+        validate_gaussian_potential_primitive({infinite_exponent, 0.0}));
+  }
+
+  SECTION("NaN exponent throws") {
+    REQUIRE_THROWS_AS(validate_gaussian_potential_primitive(
+                          {std::numeric_limits<double>::quiet_NaN(), 1.0}),
+                      std::invalid_argument);
+  }
+
+  SECTION("negative exponent throws") {
+    REQUIRE_THROWS_AS(validate_gaussian_potential_primitive({-1.0, 1.0}),
+                      std::invalid_argument);
+  }
+
+  SECTION("NaN coefficient throws") {
+    REQUIRE_THROWS_AS(validate_gaussian_potential_primitive(
+                          {1.0, std::numeric_limits<double>::quiet_NaN()}),
+                      std::invalid_argument);
+  }
+
+  SECTION("infinite_exponent equals IEEE 754 infinity") {
+    REQUIRE(infinite_exponent == std::numeric_limits<double>::infinity());
+    REQUIRE(std::isinf(infinite_exponent));
+  }
+}
+
+TEST_CASE("make_q_gau_data factory validation",
+          "[engine][1-body][validation]") {
+  using libint2::Atom;
+
+  std::vector<Atom> atoms = {Atom{1, 0.0, 0.0, 0.0}};
+
+  SECTION("make_q_gau_data_erf rejects NaN omega") {
+    REQUIRE_THROWS_AS(libint2::make_q_gau_data_erf(
+                          std::numeric_limits<double>::quiet_NaN(), atoms),
+                      std::invalid_argument);
+  }
+
+  SECTION("make_q_gau_data_erf rejects non-positive omega") {
+    REQUIRE_THROWS_AS(libint2::make_q_gau_data_erf(0.0, atoms),
+                      std::invalid_argument);
+    REQUIRE_THROWS_AS(libint2::make_q_gau_data_erf(-1.0, atoms),
+                      std::invalid_argument);
+  }
+
+  SECTION("make_q_gau_data_erfc rejects invalid omega") {
+    REQUIRE_THROWS_AS(libint2::make_q_gau_data_erfc(
+                          std::numeric_limits<double>::quiet_NaN(), atoms),
+                      std::invalid_argument);
+    REQUIRE_THROWS_AS(libint2::make_q_gau_data_erfc(0.0, atoms),
+                      std::invalid_argument);
+  }
+
+  SECTION("make_q_gau_data_erfx rejects invalid parameters") {
+    REQUIRE_THROWS_AS(
+        libint2::make_q_gau_data_erfx(std::numeric_limits<double>::quiet_NaN(),
+                                      0.3, 0.7, atoms),
+        std::invalid_argument);
+    REQUIRE_THROWS_AS(
+        libint2::make_q_gau_data_erfx(
+            0.5, std::numeric_limits<double>::quiet_NaN(), 0.7, atoms),
+        std::invalid_argument);
+    REQUIRE_THROWS_AS(
+        libint2::make_q_gau_data_erfx(
+            0.5, 0.3, std::numeric_limits<double>::quiet_NaN(), atoms),
+        std::invalid_argument);
+  }
+
+  SECTION("valid factory calls succeed") {
+    REQUIRE_NOTHROW(libint2::make_q_gau_data_erf(0.5, atoms));
+    REQUIRE_NOTHROW(libint2::make_q_gau_data_erfc(0.5, atoms));
+    REQUIRE_NOTHROW(libint2::make_q_gau_data_erfx(0.5, 0.3, 0.7, atoms));
+  }
+}
+
 // verify that python/tests/test_libint2.py:test_integrals is correct
 TEST_CASE_METHOD(libint2::unit::DefaultFixture, "python correctness",
                  "[engine][1-body]") {
