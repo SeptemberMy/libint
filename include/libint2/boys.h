@@ -2186,6 +2186,7 @@ struct q_gau_gm_eval : private detail::CoreEvalScratch<q_gau_gm_eval<Real>> {
   template <typename PrimitivesContainer>
   void operator()(Real* Gm, Real rho, Real T, int mmax,
                   const PrimitivesContainer& primitives) {
+    using std::isfinite;
     using std::isinf;
     using std::isnan;
     using std::sqrt;
@@ -2202,7 +2203,7 @@ struct q_gau_gm_eval : private detail::CoreEvalScratch<q_gau_gm_eval<Real>> {
              "q_gau_gm_eval: primitive exponent is NaN");
       assert(prim.exponent >= 0.0 &&
              "q_gau_gm_eval: primitive exponent is negative");
-      assert(std::isfinite(static_cast<double>(prim.coefficient)) &&
+      assert(isfinite(prim.coefficient) &&
              "q_gau_gm_eval: primitive coefficient is not finite");
 
       if (isinf(prim.exponent)) {

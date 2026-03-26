@@ -772,6 +772,9 @@ TEST_CASE("make_q_gau_data factory validation",
                       std::invalid_argument);
     REQUIRE_THROWS_AS(libint2::make_q_gau_data_erfc(0.0, atoms),
                       std::invalid_argument);
+    REQUIRE_THROWS_AS(libint2::make_q_gau_data_erfc(
+                          std::numeric_limits<double>::infinity(), atoms),
+                      std::invalid_argument);
   }
 
   SECTION("make_q_gau_data_erfx rejects invalid parameters") {

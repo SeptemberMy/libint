@@ -1384,7 +1384,9 @@ inline void validate_gaussian_potential_primitive(
 ///
 /// The convenience functions make_q_gau_data() build this from a nuclear model
 /// specification and a list of atoms. For full per-center control (e.g.,
-/// different models for QM vs MM atoms), construct the vector manually:
+/// different models for QM vs MM atoms), construct the vector manually.
+/// When constructing primitives by hand, call
+/// validate_gaussian_potential_primitive() on each to catch invalid inputs:
 /// @code
 ///   GaussianPotentialCentersData centers(point_charges.size());
 ///   // QM atom — point nuclear + SAP correction
