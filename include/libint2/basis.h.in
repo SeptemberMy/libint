@@ -849,6 +849,9 @@ namespace libint2 {
     auto file = basis_lib_path + PATH_SEPARATOR + canonical_name + ".g94";
     auto sap_by_Z = read_sap_basis_library(file);
 
+    // Validate unconditionally: SAP data comes from disk (system boundary).
+    // A corrupt .g94 file must not silently propagate invalid exponents or
+    // coefficients into integral evaluation.
     for (size_t z = 0; z < sap_by_Z.size(); ++z) {
       for (const auto& p : sap_by_Z[z]) {
         if (!std::isfinite(p.exponent) || p.exponent <= 0.0)
@@ -929,7 +932,8 @@ namespace libint2 {
 
   /// Build GaussianPotentialCentersData for erfx(ω,λ,σ)/r model.
   /// Computes (λ·erf(ωr) + σ·erfc(ωr))/r = σ/r - (σ-λ)·erf(ωr)/r.
-  /// Zero is valid for lambda (pure erfc) and sigma (pure -erf).
+  /// Zero is valid for lambda and sigma: λ = 0 gives σ·erfc(ωr)/r,
+  /// σ = 0 gives λ·erf(ωr)/r.
   inline GaussianPotentialCentersData make_q_gau_data_erfx(
       double omega, double lambda, double sigma,
       const std::vector<Atom>& atoms) {

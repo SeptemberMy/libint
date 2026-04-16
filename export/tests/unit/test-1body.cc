@@ -772,6 +772,8 @@ TEST_CASE("make_q_gau_data factory validation",
                       std::invalid_argument);
     REQUIRE_THROWS_AS(libint2::make_q_gau_data_erfc(0.0, atoms),
                       std::invalid_argument);
+    REQUIRE_THROWS_AS(libint2::make_q_gau_data_erfc(-1.0, atoms),
+                      std::invalid_argument);
     REQUIRE_THROWS_AS(libint2::make_q_gau_data_erfc(
                           std::numeric_limits<double>::infinity(), atoms),
                       std::invalid_argument);
@@ -782,6 +784,10 @@ TEST_CASE("make_q_gau_data factory validation",
         libint2::make_q_gau_data_erfx(std::numeric_limits<double>::quiet_NaN(),
                                       0.3, 0.7, atoms),
         std::invalid_argument);
+    REQUIRE_THROWS_AS(libint2::make_q_gau_data_erfx(0.0, 0.3, 0.7, atoms),
+                      std::invalid_argument);
+    REQUIRE_THROWS_AS(libint2::make_q_gau_data_erfx(-1.0, 0.3, 0.7, atoms),
+                      std::invalid_argument);
     REQUIRE_THROWS_AS(
         libint2::make_q_gau_data_erfx(std::numeric_limits<double>::infinity(),
                                       0.3, 0.7, atoms),
