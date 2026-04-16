@@ -2206,7 +2206,10 @@ struct q_gau_gm_eval : private detail::CoreEvalScratch<q_gau_gm_eval<Real>> {
       assert(isfinite(prim.coefficient) &&
              "q_gau_gm_eval: primitive coefficient is not finite");
 
-      if (isinf(prim.exponent)) {
+      // Only +inf is the point-charge sentinel. -inf (invalid input that
+      // escapes validation in release) falls into the Gaussian branch and
+      // produces NaN from -inf/(-inf+rho) — visibly wrong rather than silently.
+      if (isinf(prim.exponent) && prim.exponent > 0.0) {
         // α = ∞ => (∞/(∞+ρ)) = 1, contributes c_i * F_m(T)
         fm_eval_->eval(&base_type::Fm_[0], T, mmax);
         for (auto m = 0; m <= mmax; ++m)
