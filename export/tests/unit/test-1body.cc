@@ -695,53 +695,11 @@ TEST_CASE_METHOD(libint2::unit::DefaultFixture,
 #endif
 }
 
-TEST_CASE("q_gau input validation", "[engine][1-body][validation]") {
-  using libint2::infinite_exponent;
-  using libint2::validate_gaussian_potential_primitive;
-
-  SECTION("valid primitives do not throw") {
-    REQUIRE_NOTHROW(validate_gaussian_potential_primitive({0.0, 1.0}));
-    REQUIRE_NOTHROW(validate_gaussian_potential_primitive({1.5, -0.3}));
-    REQUIRE_NOTHROW(
-        validate_gaussian_potential_primitive({infinite_exponent, 1.0}));
-    REQUIRE_NOTHROW(
-        validate_gaussian_potential_primitive({infinite_exponent, 0.0}));
-  }
-
-  SECTION("NaN exponent throws") {
-    REQUIRE_THROWS_AS(validate_gaussian_potential_primitive(
-                          {std::numeric_limits<double>::quiet_NaN(), 1.0}),
-                      std::invalid_argument);
-  }
-
-  SECTION("negative exponent throws") {
-    REQUIRE_THROWS_AS(validate_gaussian_potential_primitive({-1.0, 1.0}),
-                      std::invalid_argument);
-  }
-
-  SECTION("negative infinity exponent throws") {
-    REQUIRE_THROWS_AS(validate_gaussian_potential_primitive(
-                          {-std::numeric_limits<double>::infinity(), 1.0}),
-                      std::invalid_argument);
-  }
-
-  SECTION("non-finite coefficient throws") {
-    REQUIRE_THROWS_AS(validate_gaussian_potential_primitive(
-                          {1.0, std::numeric_limits<double>::quiet_NaN()}),
-                      std::invalid_argument);
-    REQUIRE_THROWS_AS(validate_gaussian_potential_primitive(
-                          {1.0, std::numeric_limits<double>::infinity()}),
-                      std::invalid_argument);
-    REQUIRE_THROWS_AS(validate_gaussian_potential_primitive(
-                          {1.0, -std::numeric_limits<double>::infinity()}),
-                      std::invalid_argument);
-  }
-
-  SECTION("infinite_exponent equals IEEE 754 positive infinity") {
-    REQUIRE(infinite_exponent == std::numeric_limits<double>::infinity());
-    REQUIRE(std::isinf(infinite_exponent));
-    REQUIRE(infinite_exponent > 0.0);
-  }
+TEST_CASE("infinite_exponent sentinel", "[engine][1-body][validation]") {
+  REQUIRE(libint2::infinite_exponent ==
+          std::numeric_limits<double>::infinity());
+  REQUIRE(std::isinf(libint2::infinite_exponent));
+  REQUIRE(libint2::infinite_exponent > 0.0);
 }
 
 TEST_CASE("make_q_gau_data factory validation",

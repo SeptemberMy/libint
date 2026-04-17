@@ -1354,25 +1354,6 @@ struct GaussianPotentialPrimitive {
 /// corrections, erf/erfc attenuations, or any combination thereof.
 using GaussianPotentialData = std::vector<GaussianPotentialPrimitive>;
 
-/// Validates a GaussianPotentialPrimitive.
-/// @throws std::invalid_argument if exponent is NaN or negative (including
-///         -infinity), or if coefficient is non-finite (NaN or +/-infinity).
-///         Only +infinity (i.e. libint2::infinite_exponent) is accepted as a
-///         non-finite exponent.
-inline void validate_gaussian_potential_primitive(
-    const GaussianPotentialPrimitive& prim) {
-  using std::isfinite;
-  using std::isnan;
-  if (isnan(prim.exponent))
-    throw std::invalid_argument("GaussianPotentialPrimitive: exponent is NaN");
-  if (prim.exponent < 0.0)
-    throw std::invalid_argument(
-        "GaussianPotentialPrimitive: exponent is negative");
-  if (!isfinite(prim.coefficient))
-    throw std::invalid_argument(
-        "GaussianPotentialPrimitive: coefficient is not finite");
-}
-
 /// Gaussian potential data per center, parallel to the point-charges vector
 /// passed to Engine::set_params(). Each element is a shared_ptr to the
 /// potential primitives for that center:
@@ -1385,8 +1366,8 @@ inline void validate_gaussian_potential_primitive(
 /// The convenience functions make_q_gau_data() build this from a nuclear model
 /// specification and a list of atoms. For full per-center control (e.g.,
 /// different models for QM vs MM atoms), construct the vector manually.
-/// When constructing primitives by hand, call
-/// validate_gaussian_potential_primitive() on each to catch invalid inputs:
+/// Each primitive must satisfy: exponent >= 0 or exponent ==
+/// libint2::infinite_exponent; coefficient must be finite (not NaN or +/-inf).
 /// @code
 ///   using libint2::infinite_exponent;
 ///   GaussianPotentialCentersData centers(point_charges.size());
