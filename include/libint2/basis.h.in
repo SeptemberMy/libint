@@ -854,7 +854,7 @@ namespace libint2 {
     // coefficients into integral evaluation.
     for (size_t z = 0; z < sap_by_Z.size(); ++z) {
       for (const auto& p : sap_by_Z[z]) {
-        if (!std::isfinite(p.exponent) || p.exponent < 0.0)
+        if (!std::isfinite(p.exponent) || p.exponent <= 0.0)
           throw std::invalid_argument(
               "make_q_gau_data: SAP basis contains invalid exponent");
         if (!std::isfinite(p.coefficient))

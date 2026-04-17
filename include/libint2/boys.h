@@ -2201,8 +2201,8 @@ struct q_gau_gm_eval : private detail::CoreEvalScratch<q_gau_gm_eval<Real>> {
     for (const auto& prim : primitives) {
       assert(!isnan(prim.exponent) &&
              "q_gau_gm_eval: primitive exponent is NaN");
-      assert(prim.exponent >= 0.0 &&
-             "q_gau_gm_eval: primitive exponent is negative");
+      assert(prim.exponent > 0.0 &&
+             "q_gau_gm_eval: primitive exponent is non-positive");
       assert(isfinite(prim.coefficient) &&
              "q_gau_gm_eval: primitive coefficient is not finite");
 

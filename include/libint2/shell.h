@@ -1366,7 +1366,7 @@ using GaussianPotentialData = std::vector<GaussianPotentialPrimitive>;
 /// The convenience functions make_q_gau_data() build this from a nuclear model
 /// specification and a list of atoms. For full per-center control (e.g.,
 /// different models for QM vs MM atoms), construct the vector manually.
-/// Each primitive must satisfy: exponent >= 0 or exponent ==
+/// Each primitive must satisfy: exponent > 0 or exponent ==
 /// libint2::infinite_exponent; coefficient must be finite (not NaN or +/-inf).
 /// @code
 ///   using libint2::infinite_exponent;
