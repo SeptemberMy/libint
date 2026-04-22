@@ -34,8 +34,10 @@
 #include <cassert>
 #include <cmath>
 #include <iostream>
+#include <limits>
 #include <map>
 #include <memory>
+#include <stdexcept>
 #include <type_traits>
 #include <vector>
 
@@ -1332,12 +1334,18 @@ struct ShellPair {
   }
 };
 
+/// Sentinel value for GaussianPotentialPrimitive::exponent indicating a point
+/// charge (bare Coulomb 1/r potential).  Prefer this over raw INFINITY or
+/// std::numeric_limits<double>::infinity() for clarity.
+constexpr double infinite_exponent = std::numeric_limits<double>::infinity();
+
 /// A single Gaussian primitive contributing to a nuclear potential.
 /// Each primitive represents a term c * (α/(α+ρ))^(m+1/2) * F_m(T·α/(α+ρ))
-/// in the core integral expansion. Use exponent = infinity for point-charge
-/// contributions (recovers bare Coulomb F_m(T)).
+/// in the core integral expansion. Use exponent = libint2::infinite_exponent
+/// for point-charge contributions (recovers bare Coulomb F_m(T)).
 struct GaussianPotentialPrimitive {
-  double exponent;     ///< Gaussian exponent α (infinity for point charge)
+  double exponent;  ///< Gaussian exponent α; use libint2::infinite_exponent for
+                    ///< point charge
   double coefficient;  ///< coefficient c
 };
 
@@ -1357,19 +1365,22 @@ using GaussianPotentialData = std::vector<GaussianPotentialPrimitive>;
 ///
 /// The convenience functions make_q_gau_data() build this from a nuclear model
 /// specification and a list of atoms. For full per-center control (e.g.,
-/// different models for QM vs MM atoms), construct the vector manually:
+/// different models for QM vs MM atoms), construct the vector manually.
+/// Each primitive must satisfy: exponent > 0 or exponent ==
+/// libint2::infinite_exponent; coefficient must be finite (not NaN or +/-inf).
 /// @code
+///   using libint2::infinite_exponent;
 ///   GaussianPotentialCentersData centers(point_charges.size());
-///   // QM atom — point nuclear + SAP correction
+///   // QM atom — point nuclear + one SAP primitive
 ///   centers[0] = std::make_shared<const GaussianPotentialData>(
-///       GaussianPotentialData{{INFINITY, 1.0}, {alpha1, c1}, {alpha2, c2}});
+///       GaussianPotentialData{{infinite_exponent, 1.0}, {alpha1, c1}});
 ///   // QM atom — finite (Gaussian) nuclear model
 ///   auto xi = chemistry::gaussian_nuclear_exponent(Z);
 ///   centers[1] = std::make_shared<const GaussianPotentialData>(
 ///       GaussianPotentialData{{xi, 1.0}});
 ///   // MM point charge — bare Coulomb (point nuclear)
 ///   static auto pt = std::make_shared<const GaussianPotentialData>(
-///       GaussianPotentialData{{INFINITY, 1.0}});
+///       GaussianPotentialData{{infinite_exponent, 1.0}});
 ///   centers[2] = pt;
 ///   // Ghost atom — no potential
 ///   centers[3] = nullptr;

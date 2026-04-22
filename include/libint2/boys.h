@@ -2186,7 +2186,9 @@ struct q_gau_gm_eval : private detail::CoreEvalScratch<q_gau_gm_eval<Real>> {
   template <typename PrimitivesContainer>
   void operator()(Real* Gm, Real rho, Real T, int mmax,
                   const PrimitivesContainer& primitives) {
+    using std::isfinite;
     using std::isinf;
+    using std::isnan;
     using std::sqrt;
 
     if (primitives.empty()) {
@@ -2197,7 +2199,17 @@ struct q_gau_gm_eval : private detail::CoreEvalScratch<q_gau_gm_eval<Real>> {
     std::fill(Gm, Gm + mmax + 1, Real{0});
 
     for (const auto& prim : primitives) {
-      if (isinf(prim.exponent)) {
+      assert(!isnan(prim.exponent) &&
+             "q_gau_gm_eval: primitive exponent is NaN");
+      assert(prim.exponent > 0.0 &&
+             "q_gau_gm_eval: primitive exponent is non-positive");
+      assert(isfinite(prim.coefficient) &&
+             "q_gau_gm_eval: primitive coefficient is not finite");
+
+      // Only +inf is the point-charge sentinel. -inf (invalid input that
+      // escapes validation in release) falls into the Gaussian branch and
+      // produces NaN from -inf/(-inf+rho) — visibly wrong rather than silently.
+      if (isinf(prim.exponent) && prim.exponent > 0.0) {
         // α = ∞ => (∞/(∞+ρ)) = 1, contributes c_i * F_m(T)
         fm_eval_->eval(&base_type::Fm_[0], T, mmax);
         for (auto m = 0; m <= mmax; ++m)
